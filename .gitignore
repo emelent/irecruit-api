@@ -1,0 +1,5 @@
+db/
+data/
+.env*
+testing*
+server
