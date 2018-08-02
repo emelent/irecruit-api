@@ -67,7 +67,7 @@ func (r *RootResolver) Accounts(args struct{ Name *string }) []*accountResolver 
 	rawAccounts, _ := r.crud.FindAll(accountsCollection, nil)
 	results := make([]*accountResolver, 0)
 	for _, r := range rawAccounts {
-		account := bsonToAccount(r.(bson.M))
+		account := transformAccount(r)
 		results = append(results, &accountResolver{&account})
 	}
 	return results

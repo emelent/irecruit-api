@@ -17,7 +17,12 @@ type RootResolver struct {
 // OpenMongoDb opens mongodb connection
 func (r *RootResolver) OpenMongoDb() error {
 	mongoSession, err := mgo.Dial(config.DbHost)
-	r.crud = db.NewCRUD(mongoSession)
+	if err == nil {
+		r.crud = db.NewCRUD(mongoSession)
+	} else {
+		r.crud = db.NewCRUD(mongoSession)
+	}
+
 	return err
 }
 
@@ -26,17 +31,29 @@ func (r *RootResolver) CloseMongoDb() {
 	r.crud.Close()
 }
 
+func transformAccount(in interface{}) models.Account {
+	var account models.Account
+	switch v := in.(type) {
+	case bson.M:
+
+		mapstructure.Decode(v, &account)
+		account.ID = v["_id"].(bson.ObjectId)
+		if v["hunter_id"] != nil {
+			id := (v["hunter_id"]).(bson.ObjectId)
+			account.HunterID = &id
+		}
+		if v["recruit_id"] != nil {
+			id := (v["recruit_id"]).(bson.ObjectId)
+			account.RecruitID = &id
+		}
+
+	case models.Account:
+		account = v
+	}
+
+	return account
+}
 func bsonToAccount(b bson.M) models.Account {
 	var account models.Account
-	mapstructure.Decode(b, &account)
-	account.ID = b["_id"].(bson.ObjectId)
-	if b["hunter_id"] != nil {
-		id := (b["hunter_id"]).(bson.ObjectId)
-		account.HunterID = &id
-	}
-	if b["recruit_id"] != nil {
-		id := (b["recruit_id"]).(bson.ObjectId)
-		account.RecruitID = &id
-	}
 	return account
 }

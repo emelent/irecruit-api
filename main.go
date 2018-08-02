@@ -18,9 +18,9 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	gqlResolver := &resolver.RootResolver{}
 
+	gqlResolver.OpenMongoDb()
 	if err := gqlResolver.OpenMongoDb(); err != nil {
-		log.Fatal("Failed to open MongoDb connection.")
-		return
+		log.Println("MongoDb failed to connect, falling back to temporary mock database.")
 	}
 	defer gqlResolver.CloseMongoDb()
 
