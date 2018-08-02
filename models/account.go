@@ -24,16 +24,16 @@ type Account struct {
 //OK validates Account fields
 func (a *Account) OK() error {
 	if a.Email == "" {
-		return e.MissingFieldError{"Email"}
+		return e.NewMissingFieldError("Email")
 	}
 	if a.Password == "" {
-		return e.MissingFieldError{"Password"}
+		return e.NewMissingFieldError("Password")
 	}
 	if a.Name == "" {
-		return e.MissingFieldError{"Name"}
+		return e.NewMissingFieldError("Name")
 	}
 	if a.Surname == "" {
-		return e.MissingFieldError{"Name"}
+		return e.NewMissingFieldError("Name")
 	}
 
 	return nil
