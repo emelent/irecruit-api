@@ -92,3 +92,15 @@ func (r *RootResolver) CreateAccount(args struct{ Info *accountDetails }) *accou
 	}
 	return &accountResolver{&account}
 }
+
+// RemoveAccount removes an account
+func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) string {
+	defer r.crud.CloseCopy()
+
+	id := bson.ObjectIdHex(string(args.ID))
+	err := r.crud.DeleteID(accountsCollection, id)
+	if err != nil {
+		return "Failed to remove account."
+	}
+	return "Account successfully removed."
+}

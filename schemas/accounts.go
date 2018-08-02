@@ -25,7 +25,7 @@ var AccountSchema = Schema{
 		accounts(name: String): [Account]!
 	`,
 	Mutations: `
-		#removeAccount(id: ID!): Account
+		removeAccount(id: ID!): String!
 		createAccount(info: AccountDetails!): Account
 	`,
 }
