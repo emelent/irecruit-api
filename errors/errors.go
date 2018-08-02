@@ -21,6 +21,13 @@ func (e InvalidFieldError) Error() string {
 	return fmt.Sprintf("Invalid field '%s'.", e.Message)
 }
 
+//InvalidTokenError  error for invalid token
+type InvalidTokenError CustomError
+
+func (e InvalidTokenError) Error() string {
+	return "Invalid token."
+}
+
 // NewMissingFieldError creates a new missing field error
 func NewMissingFieldError(field string) MissingFieldError {
 	return MissingFieldError{field}
