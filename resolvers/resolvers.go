@@ -30,5 +30,13 @@ func bsonToAccount(b bson.M) models.Account {
 	var account models.Account
 	mapstructure.Decode(b, &account)
 	account.ID = b["_id"].(bson.ObjectId)
+	if b["hunter_id"] != nil {
+		id := (b["hunter_id"]).(bson.ObjectId)
+		account.HunterID = &id
+	}
+	if b["recruit_id"] != nil {
+		id := (b["recruit_id"]).(bson.ObjectId)
+		account.RecruitID = &id
+	}
 	return account
 }
