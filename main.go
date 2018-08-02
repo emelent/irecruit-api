@@ -33,7 +33,7 @@ func main() {
 	router.
 		Path("/graphql").
 		// Methods(http.MethodPost).
-		Handler(&relay.Handler{Schema: schema})
+		Handler(mware.ReqInfoMiddleware(&relay.Handler{Schema: schema}))
 
 	port := ":9999"
 	log.Printf("Serving on 0.0.0.0 %s\n\n", port)

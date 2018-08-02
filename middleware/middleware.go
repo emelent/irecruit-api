@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -32,6 +33,25 @@ func CorsMiddleware(h http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+		h.ServeHTTP(w, r)
+	})
+}
+
+// CK get
+type CK string
+
+//UaKey is lsf
+const UaKey = CK("user_agent")
+
+//IPKey is asdf
+const IPKey = CK("ip_address")
+
+// ReqInfoMiddleware puts some request info into the context
+func ReqInfoMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), UaKey, r.Header.Get("User-Agent"))
+		ctx = context.WithValue(ctx, IPKey, r.RemoteAddr)
+		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})
 }
