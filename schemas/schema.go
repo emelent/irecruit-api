@@ -18,6 +18,7 @@ var intermediateTypes = `
 // DefaultSchemas is a list of all necessary schemas
 var DefaultSchemas = []Schema{
 	AccountSchema,
+	LoginSchema,
 }
 
 // CreateSchema creates a schema from given Schema structs
