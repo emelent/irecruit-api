@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	mware "./middleware"
@@ -23,6 +25,12 @@ func main() {
 		log.Println("MongoDb failed to connect, falling back to temporary mock database.")
 	}
 	defer gqlResolver.CloseMongoDb()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovery in main()=>", r)
+			os.Exit(1)
+		}
+	}()
 
 	schema := graphql.MustParseSchema(
 		schemas.CreateSchema(schemas.DefaultSchemas...),
