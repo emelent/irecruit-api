@@ -1,9 +1,12 @@
 package resolvers
 
 import (
+	"context"
 	"fmt"
 
+	mware "../middleware"
 	models "../models"
+	utils "../utils"
 	graphql "github.com/graph-gophers/graphql-go"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -58,6 +61,19 @@ func (r *accountResolver) RecruitID() *graphql.ID {
 	return &id
 }
 
+type tokensResolver struct {
+	refresh string
+	access  string
+}
+
+func (r *tokensResolver) AccessToken() string {
+	return r.access
+}
+
+func (r *tokensResolver) RefreshToken() string {
+	return r.refresh
+}
+
 // Accounts resolves accounts(name: String) query
 func (r *RootResolver) Accounts(args struct{ Name *string }) []*accountResolver {
 	defer r.crud.CloseCopy()
@@ -74,7 +90,7 @@ func (r *RootResolver) Accounts(args struct{ Name *string }) []*accountResolver 
 }
 
 // CreateAccount resolves the query of the same name
-func (r *RootResolver) CreateAccount(args struct{ Info *accountDetails }) *accountResolver {
+func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) *tokensResolver {
 	defer r.crud.CloseCopy()
 	account := models.Account{}
 	info := args.Info
@@ -85,12 +101,46 @@ func (r *RootResolver) CreateAccount(args struct{ Info *accountDetails }) *accou
 	account.SetPassword(info.Password)
 	account.ID = bson.NewObjectId()
 
+	// create account
 	err := r.crud.Insert(accountsCollection, account)
 	if err != nil {
 		fmt.Println("Error creating account =>", err)
 		fmt.Printf("%#v", account)
+		return nil
 	}
-	return &accountResolver{&account}
+	id := account.ID.Hex()
+	// create refresh token
+	refresh, err := utils.CreateRefreshToken(id)
+
+	if err != nil {
+		fmt.Println("Error creating refresh token =>", err)
+		return nil
+	}
+
+	// access token
+	ua := ctx.Value(mware.UaKey).(string)
+	access, err := utils.CreateAccessToken(id, ua)
+
+	if err != nil {
+		fmt.Println("Error creating access token =>", err)
+		return nil
+	}
+
+	// create token manager
+	tokenMgr := models.TokenManager{
+		AccountID:    account.ID,
+		Tokens:       []string{access},
+		RefreshToken: refresh,
+		MaxTokens:    5,
+	}
+	err = r.crud.Insert(tokenMgrCollection, tokenMgr)
+	if err != nil {
+		fmt.Println("Error creating token manager =>", err)
+		fmt.Printf("%#v", account)
+		return nil
+	}
+
+	return &tokensResolver{refresh: refresh, access: access}
 }
 
 // RemoveAccount removes an account

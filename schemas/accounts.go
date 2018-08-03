@@ -12,6 +12,11 @@ var AccountSchema = Schema{
 			hunter_id: ID
 			recruit_id: ID
 		}	
+		
+		type Tokens {
+			refreshToken: String!
+			accessToken: String!
+		}
 
 		input AccountDetails{
 			email: String!
@@ -26,6 +31,6 @@ var AccountSchema = Schema{
 	`,
 	Mutations: `
 		removeAccount(id: ID!): String!
-		createAccount(info: AccountDetails!): Account
+		createAccount(info: AccountDetails!): Tokens
 	`,
 }
