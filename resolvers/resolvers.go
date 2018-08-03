@@ -53,7 +53,24 @@ func transformAccount(in interface{}) models.Account {
 
 	return account
 }
-func bsonToAccount(b bson.M) models.Account {
-	var account models.Account
-	return account
+
+func transformTokenManager(in interface{}) models.TokenManager {
+	var tokenMgr models.TokenManager
+	switch v := in.(type) {
+	case bson.M:
+		tokenMgr.RefreshToken = v["refresh_token"].(string)
+		tokenMgr.MaxTokens = v["max_tokens"].(int)
+		tokenMgr.ID = v["_id"].(bson.ObjectId)
+		tokenMgr.AccountID = v["account_id"].(bson.ObjectId)
+		tokens := make([]string, 0)
+		rawTokens := v["tokens"].([]interface{})
+		for _, t := range rawTokens {
+			tokens = append(tokens, t.(string))
+		}
+		tokenMgr.Tokens = tokens
+	case models.TokenManager:
+		tokenMgr = v
+	}
+
+	return tokenMgr
 }
