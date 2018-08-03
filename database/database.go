@@ -30,7 +30,7 @@ var collectionIndexes = map[string][]mgo.Index{
 			Unique: true,
 		},
 		{
-			Key:    []string{"tokens.signature"},
+			Key:    []string{"refresh_token"},
 			Unique: true,
 		},
 	},
