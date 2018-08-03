@@ -6,6 +6,7 @@ import (
 
 // TokenManager model
 type TokenManager struct {
+	ID           bson.ObjectId `json:"id" bson:"_id"`
 	AccountID    bson.ObjectId `json:"account_id" bson:"account_id"`
 	Tokens       []string      `json:"tokens" bson:"tokens"`
 	RefreshToken string        `json:"refresh_token" bson:"refresh_token"`
