@@ -1,12 +1,9 @@
 package resolvers
 
 import (
+	"context"
 	"fmt"
 	"time"
-
-	"github.com/dgrijalva/jwt-go"
-
-	"context"
 
 	mware "../middleware"
 	utils "../utils"
@@ -16,42 +13,56 @@ import (
 const tokenMgrCollection = "token_managers"
 
 // Login resolves graphql method of the same name
-func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) string {
+func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) *tokensResolver {
 	rawAccount, err := r.crud.FindOne(accountsCollection, bson.M{"email": args.Email})
 	failedLogin := "Invalid username or email."
 	if err != nil {
-		fmt.Println("login error =>", err)
-		return failedLogin
+		fmt.Println(failedLogin, "=>", err)
+		return nil
 	}
 
 	account := transformAccount(rawAccount)
 	if !account.CheckPassword(args.Password) {
-		return failedLogin
+		fmt.Println(failedLogin, "=>", "bad password")
+		return nil
 	}
 
-	ua := ctx.Value(mware.UaKey).(string)
-	// ip := ctx.Value("ip_address")
-
-	//TODO create refresh token
-	tokenStr, err := utils.CreateToken(utils.Claims{
-		AccountID: account.ID.Hex(),
-		Refresh:   true,
-		UserAgent: ua,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * time.Duration(24*30)).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-	})
-
+	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, bson.M{"account_id": account.ID})
 	if err != nil {
-		fmt.Println("token error =>", err)
-		return "Something went wrong."
+		fmt.Println("token_mgr error =>", err)
+		return nil
+	}
+	tokenMgr := transformTokenManager(rawTokenMgr)
+
+	// create a new refresh token if the current one
+	id := account.ID.Hex()
+	ua := ctx.Value(mware.UaKey).(string)
+	claims, err := utils.GetTokenClaims(tokenMgr.RefreshToken)
+	t := time.Unix(claims.StandardClaims.ExpiresAt, 0)
+	if time.Until(t) < time.Hour*24 {
+		// create new refresh token
+		tokenStr, err := utils.CreateRefreshToken(id)
+		if err != nil {
+			fmt.Println("Failed to create new refresh token =>", err)
+			return nil
+		}
+		tokenMgr.RefreshToken = tokenStr
+
+		// update refresh token in database
+		r.crud.UpdateID(
+			tokenMgrCollection,
+			tokenMgr.ID, bson.M{"refresh_token": tokenStr},
+		)
 	}
 
-	//TODO register token in database
-	// r.crud.Insert(tokenMgrCollection, Token{
-
-	// })
-	//TODO return refresh token
-	return tokenStr
+	// create access token
+	access, err := utils.CreateAccessToken(id, ua)
+	if err != nil {
+		fmt.Println("Failed to create access token =>", err)
+		return nil
+	}
+	return &tokensResolver{
+		refresh: tokenMgr.RefreshToken,
+		access:  access,
+	}
 }
