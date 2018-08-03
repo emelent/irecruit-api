@@ -128,6 +128,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 
 	// create token manager
 	tokenMgr := models.TokenManager{
+		ID:           bson.NewObjectId(),
 		AccountID:    account.ID,
 		Tokens:       []string{access},
 		RefreshToken: refresh,
