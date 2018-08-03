@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"time"
+
 	e "../errors"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -15,11 +17,37 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-// CreateToken creates a jwt token with given claims
-func CreateToken(claims Claims) (string, error) {
+func createToken(claims Claims) (*jwt.Token, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(mySigningKey)
-	return signed, err
+	return token, signed, err
+}
+
+// CreateRefreshToken creates a refresh token
+func CreateRefreshToken(accountID string) (string, error) {
+	_, tokenStr, err := createToken(Claims{
+		AccountID: accountID,
+		Refresh:   true,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * time.Duration(24*30)).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+	})
+	return tokenStr, err
+}
+
+// CreateAccessToken creates an access token
+func CreateAccessToken(accountID, ua string) (string, error) {
+	_, tokenStr, err := createToken(Claims{
+		AccountID: accountID,
+		Refresh:   false,
+		UserAgent: ua,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * time.Duration(24)).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+	})
+	return tokenStr, err
 }
 
 // GetTokenClaims parses the given token
