@@ -1,1 +1,1 @@
-# Shop Keeper REST server
+# iRecruit graphql api
