@@ -3,10 +3,6 @@ package schemas
 // AccountSchema schema
 var AccountSchema = Schema{
 	Types: `
-		type Fail {
-			error: String!
-		}
-
 		type Account {
 			id: ID!
 			name: String!

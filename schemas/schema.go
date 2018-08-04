@@ -13,6 +13,9 @@ type Schema struct {
 
 // These are type definitions for interfaces and other type abstractions
 var intermediateTypes = `
+	type Fail {
+		error: String!
+	}
 `
 
 // DefaultSchemas is a list of all necessary schemas
