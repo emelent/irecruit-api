@@ -3,6 +3,10 @@ package schemas
 // AccountSchema schema
 var AccountSchema = Schema{
 	Types: `
+		type Fail {
+			error: String!
+		}
+
 		type Account {
 			id: ID!
 			name: String!
@@ -18,19 +22,24 @@ var AccountSchema = Schema{
 			accessToken: String!
 		}
 
+		union AccountOrFail = Account | Fail
+		union TokensOrFail = Tokens | Fail
+		
 		input AccountDetails{
 			email: String!
 			password: String!
 			name: String!
 			surname: String!
 		}
+
+
 	`,
 	Queries: `
 		# Retrieve all accounts
 		accounts(name: String): [Account]!
 	`,
 	Mutations: `
-		removeAccount(id: ID!): String!
-		createAccount(info: AccountDetails!): Tokens
+		removeAccount(id: ID!): AccountOrFail
+		createAccount(info: AccountDetails!): TokensOrFail
 	`,
 }
