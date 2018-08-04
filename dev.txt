@@ -1,0 +1,3 @@
+TODO
+	
+	- refactor and start TDD since we're done experimenting
