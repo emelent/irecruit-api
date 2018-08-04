@@ -5,7 +5,7 @@ var LoginSchema = Schema{
 	Types:   ``,
 	Queries: ``,
 	Mutations: `
-		login(email: String!, password: String!): Tokens
+		login(email: String!, password: String!): TokensOrFail
 		#logout(token: String!): String!
 	`,
 }
