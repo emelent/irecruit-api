@@ -3,17 +3,20 @@ package database
 import (
 	config "../config"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //NewCRUD creates a new CRUD type
 func NewCRUD(session *mgo.Session) *CRUD {
-	clone := session.Copy()
-	defer clone.Close()
+	if session != nil {
+		clone := session.Copy()
+		defer clone.Close()
 
-	ensureIndexes(clone)
+		ensureIndexes(clone)
+	}
 	crud := &CRUD{}
 	crud.Session = session
-	crud.TempStorage = make(map[string][]interface{})
+	crud.TempStorage = make(map[string][]bson.M)
 	return crud
 }
 

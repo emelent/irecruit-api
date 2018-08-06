@@ -14,7 +14,7 @@ const tokenMgrCollection = "token_managers"
 
 // Login resolves graphql method of the same name
 func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) *tokensOrFailResolver {
-	rawAccount, err := r.crud.FindOne(accountsCollection, bson.M{"email": args.Email})
+	rawAccount, err := r.crud.FindOne(accountsCollection, &bson.M{"email": args.Email})
 	failedLogin := "Invalid username or email."
 	genericErr := "Something went wrong."
 	if err != nil {
@@ -26,7 +26,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		return &tokensOrFailResolver{&failResolver{failedLogin}}
 	}
 
-	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, bson.M{"account_id": account.ID})
+	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": account.ID})
 	if err != nil {
 		fmt.Println("Failed to find TokenManager =>", err)
 		return &tokensOrFailResolver{&failResolver{genericErr}}

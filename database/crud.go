@@ -1,10 +1,10 @@
 package database
 
 import (
-	"fmt"
-
 	config "../config"
+	"github.com/fatih/structs"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //CRUD is a db abstraction layer used to perforom testing
@@ -12,7 +12,7 @@ import (
 type CRUD struct {
 	Session     *mgo.Session
 	CopySession *mgo.Session
-	TempStorage map[string][]interface{}
+	TempStorage map[string][]bson.M
 }
 
 //InitCopy initialises a copy session if one is not ready
@@ -26,9 +26,12 @@ func (db *CRUD) InitCopy() {
 func (db *CRUD) Insert(collection string, values ...interface{}) error {
 	//mock
 	if db.Session == nil {
-		// !! assumes values is an array.. is it?
-		db.TempStorage[collection] = append(db.TempStorage[collection], values...)
-		fmt.Println(len(db.TempStorage[collection]), collection, "(s) added.")
+		// turn values into bson values
+		bValues := make([]bson.M, 0)
+		for _, v := range values {
+			bValues = append(bValues, makeBson(v))
+		}
+		db.TempStorage[collection] = append(db.TempStorage[collection], bValues...)
 		return nil
 	}
 
@@ -38,10 +41,10 @@ func (db *CRUD) Insert(collection string, values ...interface{}) error {
 }
 
 //FindAll  finds all matching db entries
-func (db *CRUD) FindAll(collection string, query interface{}) ([]interface{}, error) {
-	//mock
-	if db.Session == nil {
-		return db.TempStorage[collection], nil
+func (db *CRUD) FindAll(collection string, query *bson.M) ([]interface{}, error) {
+	if db.Session == nil { // a.k.a, we're in the mock
+		results := filter(db.TempStorage[collection], matchQuery(query))
+		return results, nil
 	}
 
 	db.InitCopy()
@@ -51,10 +54,10 @@ func (db *CRUD) FindAll(collection string, query interface{}) ([]interface{}, er
 }
 
 //FindOne finds a db entry
-func (db *CRUD) FindOne(collection string, query interface{}) (interface{}, error) {
-	//mock
-	if db.Session == nil {
-		return db.TempStorage[collection], nil
+func (db *CRUD) FindOne(collection string, query *bson.M) (interface{}, error) {
+	if db.Session == nil { // in the mock
+		result := filterFirst(db.TempStorage[collection], matchQuery(query))
+		return result, nil
 	}
 
 	db.InitCopy()
@@ -64,38 +67,36 @@ func (db *CRUD) FindOne(collection string, query interface{}) (interface{}, erro
 }
 
 //UpdateID updates entry by id
-func (db *CRUD) UpdateID(collection string, id, value interface{}) error {
-	//mock
-	if db.Session == nil {
-		//Not implemented because I don't know how to do it yet.
-		//This needs me to check type of entry then make a temp entry,
-		//check if it has an 'id' property or assume it has one and write
-		//the necessary code for checks and fallbacks, and then finally update
-		//the entry in the slice, which I think is a bit much for a mock,
-		//and haven't come across a need for this to test my handlers.
-
-		// items := db.TempStorage[collection]
-		// for i, v := range items {
-		// 	if v.id == string(id) {
-		// 		temp := append(items[:n], append([]interface {
-		// 			v
-		// 		}, items[n+1:]...)...)
-		// 	}
-		// 	db.TempStorage[collection] = temp
-		// }
+func (db *CRUD) UpdateID(collection string, id bson.ObjectId, updates bson.M) error {
+	if db.Session == nil { // mocking
+		for i, r := range db.TempStorage[collection] {
+			if r["_id"] == id {
+				for k, v := range updates {
+					r[k] = v
+				}
+				db.TempStorage[collection][i] = r
+				break
+			}
+		}
 		return nil
 	}
 
 	db.InitCopy()
-	return db.CopySession.DB(config.DbName).C(collection).UpdateId(id, value)
+	return db.CopySession.DB(config.DbName).C(collection).UpdateId(id, updates)
 }
 
 //DeleteID deletes a db entry by id
-func (db *CRUD) DeleteID(collection string, id interface{}) error {
+func (db *CRUD) DeleteID(collection string, id bson.ObjectId) error {
 	//mock
 	if db.Session == nil {
-		//This is not implemented for the same reason UpdateID is
-		//not implemented.
+		c := db.TempStorage[collection]
+		for i, v := range db.TempStorage[collection] {
+			if v["_id"] == id {
+				db.TempStorage[collection] = append(c[:i], c[i+1:]...)
+				break
+			}
+		}
+
 		return nil
 	}
 
@@ -117,5 +118,46 @@ func (db *CRUD) CloseCopy() {
 	if db.CopySession != nil {
 		db.CopySession.Close()
 		db.CopySession = nil
+	}
+}
+
+func makeBson(in interface{}) bson.M {
+	structs.DefaultTagName = "bson"
+	t := structs.Map(in)
+	return bson.M(t)
+}
+
+func filter(in []bson.M, fn func(bson.M) bool) []interface{} {
+	results := make([]interface{}, 0)
+	for _, v := range in {
+		if fn(v) {
+			results = append(results, v)
+		}
+	}
+	return results
+}
+
+func filterFirst(in []bson.M, fn func(bson.M) bool) interface{} {
+	for _, v := range in {
+		if fn(v) {
+			return v
+		}
+	}
+	return nil
+}
+func matchQuery(query *bson.M) func(bson.M) bool {
+	if query == nil {
+		return func(m bson.M) bool {
+			return true
+		}
+	}
+
+	return func(m bson.M) bool {
+		for k, v := range *query {
+			if m[k] != v {
+				return false
+			}
+		}
+		return true
 	}
 }

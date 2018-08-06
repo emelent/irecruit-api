@@ -192,7 +192,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) *accountOrFailResolver {
 	defer r.crud.CloseCopy()
 	id := bson.ObjectIdHex(string(args.ID))
-	rawAccount, err := r.crud.FindOne(accountsCollection, id)
+	rawAccount, err := r.crud.FindOne(accountsCollection, &bson.M{"_id": id})
 	genericErr := "Failed to remove account."
 	if err != nil {
 		return &accountOrFailResolver{&failResolver{
@@ -206,7 +206,7 @@ func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) *accountOrFai
 		return &accountOrFailResolver{&failResolver{genericErr}}
 	}
 
-	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, bson.M{"account_id": id})
+	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": id})
 	if err != nil {
 		fmt.Println("Failed to find TokenManager =>", err)
 		return &accountOrFailResolver{&failResolver{genericErr}}
