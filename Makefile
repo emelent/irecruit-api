@@ -4,7 +4,8 @@ BIN = main
 GO_BUILD_ENV := CGO_ENABLED=0 GOOS=linux 
 run:
 	${CC} run ${SRC}
-
+run-mock:
+	${CC} run ${SRC}  -mock
 build:
 	${CC} build -o ${BIN} ${SRC}
 static-build:
