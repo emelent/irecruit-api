@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -8,23 +9,40 @@ import (
 	"os"
 	"time"
 
+	config "./config"
+	db "./database"
 	mware "./middleware"
-	resolver "./resolvers"
-	schemas "./schemas"
-	"github.com/gorilla/mux"
-	graphql "github.com/graph-gophers/graphql-go"
-	"github.com/graph-gophers/graphql-go/relay"
+	route "./routing"
+	mgo "gopkg.in/mgo.v2"
 )
 
 func main() {
+	// seed the rand
 	rand.Seed(time.Now().UnixNano())
-	gqlResolver := &resolver.RootResolver{}
 
-	gqlResolver.OpenMongoDb()
-	if err := gqlResolver.OpenMongoDb(); err != nil {
-		log.Println("MongoDb failed to connect, falling back to temporary mock database.")
+	// get cli of args
+	mock := flag.Bool("mock", false, "Uses mock database if true.")
+	flag.Parse()
+
+	// setup crud system
+	var crud *db.CRUD
+	if *mock != true {
+		// connect to mongo
+		log.Println("Dialing mongodb ...")
+		mongoSession, err := mgo.Dial(config.DbHost)
+		crud = db.NewCRUD(mongoSession)
+		if err != nil {
+			log.Println("Mongodb didn't pick up, falling back to temporary mock database.")
+		}
+	} else {
+		log.Println("Using temporary mock db.")
+		crud = db.NewCRUD(nil)
 	}
-	defer gqlResolver.CloseMongoDb()
+
+	// closes db connection if any
+	defer crud.Close()
+
+	// handle unexpected panics
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovery in main()=>", r)
@@ -32,19 +50,11 @@ func main() {
 		}
 	}()
 
-	schema := graphql.MustParseSchema(
-		schemas.CreateSchema(schemas.DefaultSchemas...),
-		gqlResolver,
-	)
-	router := mux.NewRouter()
-	mware.ApplyMiddleware(router, mware.CorsMiddleware, mware.LoggerMiddleware)
-	router.
-		Path("/graphql").
-		// Methods(http.MethodPost).
-		Handler(mware.ReqInfoMiddleware(&relay.Handler{Schema: schema}))
+	// prepare the router
+	router := route.NewGqlRouter(crud, mware.CorsMiddleware, mware.LoggerMiddleware)
 
-	port := ":9999"
-	log.Printf("Serving on 0.0.0.0 %s\n\n", port)
-	log.Fatal(http.ListenAndServe(port, router))
+	// start listening
+	log.Printf("Serving on 0.0.0.0 %s\n\n", config.Port)
+	log.Fatal(http.ListenAndServe(config.Port, router))
 
 }
