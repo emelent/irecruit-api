@@ -1,11 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
 	db "./database"
+	route "./routing"
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/mgo.v2/bson"
@@ -105,4 +111,62 @@ func Test_CrudDeleteID(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotNil(b1, "An expected value does not exist in the db.")
 	assert.Nil(r1, "crud.DeleteID did not remove value from the db.")
+}
+
+func preloadedCrud() *db.CRUD {
+	crud := db.NewCRUD(nil)
+	// TODO load some fixtures
+	return crud
+}
+
+func createGQLHandler(crud *db.CRUD) http.Handler {
+	return route.NewGqlHandler(crud)
+}
+
+func Test_AccountList(t *testing.T) {
+	//prepare handler
+	crud := preloadedCrud()
+	handler := createGQLHandler(crud)
+
+	method := "accounts"
+	query := fmt.Sprintf(`query{
+		%s{
+			id
+			name
+			surname
+			email
+		}
+	}`, method)
+
+	//prepare request
+	data := map[string]interface{}{
+		"query": query,
+	}
+
+	postData, _ := json.Marshal(data)
+	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(postData))
+	req.Header.Add("Content-Type", "application/json")
+
+	//make request
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+	res := w.Result()
+
+	//process response
+	body, _ := ioutil.ReadAll(res.Body)
+	var response map[string]interface{}
+	_ = json.Unmarshal(body, &response)
+	dataPortion, dOk := response["data"].(map[string]interface{})
+	results, rOk := dataPortion[method].([]interface{})
+
+	//make assertions
+	assert := assert.New(t)
+
+	assert.NotContains(response, "error", "Unexpected error in response.")
+	assert.Contains(response, "data", "Invalid response.")
+	assert.Contains(response["data"], "accounts", "Missing response data.")
+	assert.True(dOk, "Invalid data response type.")
+	assert.True(rOk, "Invalid data[\"account\"] response type.")
+	assert.Len(results, 0, "Invalid number of results.")
+
 }
