@@ -5,35 +5,41 @@ import "fmt"
 //CustomError is the base for all other CustomError types
 type CustomError struct {
 	Message string
+	Code    int
 }
 
-//MissingFieldError is an error for missing fields
-type MissingFieldError CustomError
-
-func (e MissingFieldError) Error() string {
-	return fmt.Sprintf("'%s' field is required.", e.Message)
-}
-
-//InvalidFieldError is an error for invalid fields
-type InvalidFieldError CustomError
-
-func (e InvalidFieldError) Error() string {
-	return fmt.Sprintf("Invalid field '%s'.", e.Message)
-}
-
-//InvalidTokenError  error for invalid token
-type InvalidTokenError CustomError
-
-func (e InvalidTokenError) Error() string {
-	return "Invalid token."
+func (e CustomError) Error() string {
+	return e.Message
 }
 
 // NewMissingFieldError creates a new missing field error
-func NewMissingFieldError(field string) MissingFieldError {
-	return MissingFieldError{field}
+func NewMissingFieldError(field string) CustomError {
+	msg := fmt.Sprintf("'%s' field is required.", field)
+	return CustomError{msg, 001}
 }
 
 // NewInvalidFieldError creates a new invalid field error
-func NewInvalidFieldError(field string) InvalidFieldError {
-	return InvalidFieldError{field}
+func NewInvalidFieldError(field string) CustomError {
+	msg := fmt.Sprintf("Invalid field '%s'.", field)
+	return CustomError{msg, 002}
+}
+
+// NewInvalidTokenError returns a new invalid token error
+func NewInvalidTokenError() CustomError {
+	return CustomError{"Invalid token.", 003}
+}
+
+// NewInvalidCredentialsError returns a new invalid credentials error
+func NewInvalidCredentialsError() CustomError {
+	return CustomError{"Invalid credentials.", 004}
+}
+
+// NewInternalError creates a new internal error
+func NewInternalError(msg string) CustomError {
+	return CustomError{msg, 101}
+}
+
+// NewGenericError creates a new internal error
+func NewGenericError() CustomError {
+	return CustomError{"Oops, something went wrong, please try again.", 102}
 }
