@@ -3,7 +3,7 @@ package utils
 import (
 	"time"
 
-	e "../errors"
+	er "../errors"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -63,6 +63,6 @@ func GetTokenClaims(tokenString string) (*Claims, error) {
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
-	return nil, e.InvalidTokenError{}
+	return nil, er.NewInvalidTokenError()
 
 }
