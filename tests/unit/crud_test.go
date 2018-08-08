@@ -1,28 +1,24 @@
-package main
+package unittests
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"os"
 	"testing"
 
-	db "./database"
-	route "./routing"
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/mgo.v2/bson"
+
+	db "../../database"
 )
 
+// types
 type person struct {
 	ID   bson.ObjectId `bson:"_id"`
 	Name string
 	Age  int
 	Food string
 }
+
+// globs
 
 const collection = "collection"
 
@@ -33,10 +29,7 @@ var people = []interface{}{
 	person{bson.NewObjectId(), "Martha", 23, "Ice-Cream"},
 }
 
-func TestMain(m *testing.M) {
-	retCode := m.Run()
-	os.Exit(retCode)
-}
+// helpers
 
 func loadedCRUD() *db.CRUD {
 	crud := db.NewCRUD(nil)
@@ -44,7 +37,8 @@ func loadedCRUD() *db.CRUD {
 	return crud
 }
 
-func Test_CrudFindAll(t *testing.T) {
+// tests
+func TestCrudFindAll(t *testing.T) {
 	crud := loadedCRUD()
 
 	// prepare results
@@ -54,12 +48,12 @@ func Test_CrudFindAll(t *testing.T) {
 
 	// make assertions
 	assert := assert.New(t)
-	assert.Equal(len(people), len(r1), "crud.FindAll with nil query does not return all results")
-	assert.Equal(2, len(r2), "crud.FindAll with query does not return the right results")
-	assert.Equal(0, len(r3), "crud.FindAll with query does not return 0 results")
+	assert.Equal(len(people), len(r1), "crud.FindAll with match-all query does not return all results")
+	assert.Equal(2, len(r2), "crud.FindAll with matching query does not return the right results")
+	assert.Equal(0, len(r3), "crud.FindAll with matchless query does not return 0 results")
 }
 
-func Test_CrudFindOne(t *testing.T) {
+func TestCrudFindOne(t *testing.T) {
 	crud := loadedCRUD()
 	p0 := bson.M(structs.Map(people[0]))
 
@@ -69,7 +63,6 @@ func Test_CrudFindOne(t *testing.T) {
 	r3, _ := crud.FindOne(collection, &bson.M{"Name": "Jake"})      // expect none
 
 	r1 := i1.(bson.M)
-	fmt.Println(r1)
 	r2 := i2.(bson.M)
 
 	//make assertions
@@ -79,7 +72,7 @@ func Test_CrudFindOne(t *testing.T) {
 	assert.Nil(r3, "crud.FindOne with non-matching query does not return expected result")
 }
 
-func Test_CrudUpdateID(t *testing.T) {
+func TestCrudUpdateID(t *testing.T) {
 	crud := loadedCRUD()
 	p0 := people[0].(person)
 	oldName := p0.Name
@@ -98,7 +91,7 @@ func Test_CrudUpdateID(t *testing.T) {
 
 }
 
-func Test_CrudDeleteID(t *testing.T) {
+func TestCrudDeleteID(t *testing.T) {
 	crud := loadedCRUD()
 	p0 := people[0].(person)
 
@@ -111,62 +104,4 @@ func Test_CrudDeleteID(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotNil(b1, "An expected value does not exist in the db.")
 	assert.Nil(r1, "crud.DeleteID did not remove value from the db.")
-}
-
-func preloadedCrud() *db.CRUD {
-	crud := db.NewCRUD(nil)
-	// TODO load some fixtures
-	return crud
-}
-
-func createGQLHandler(crud *db.CRUD) http.Handler {
-	return route.NewGqlHandler(crud)
-}
-
-func Test_AccountList(t *testing.T) {
-	//prepare handler
-	crud := preloadedCrud()
-	handler := createGQLHandler(crud)
-
-	method := "accounts"
-	query := fmt.Sprintf(`query{
-		%s{
-			id
-			name
-			surname
-			email
-		}
-	}`, method)
-
-	//prepare request
-	data := map[string]interface{}{
-		"query": query,
-	}
-
-	postData, _ := json.Marshal(data)
-	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(postData))
-	req.Header.Add("Content-Type", "application/json")
-
-	//make request
-	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, req)
-	res := w.Result()
-
-	//process response
-	body, _ := ioutil.ReadAll(res.Body)
-	var response map[string]interface{}
-	_ = json.Unmarshal(body, &response)
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	results, rOk := dataPortion[method].([]interface{})
-
-	//make assertions
-	assert := assert.New(t)
-
-	assert.NotContains(response, "error", "Unexpected error in response.")
-	assert.Contains(response, "data", "Invalid response.")
-	assert.Contains(response["data"], "accounts", "Missing response data.")
-	assert.True(dOk, "Invalid data response type.")
-	assert.True(rOk, "Invalid data[\"account\"] response type.")
-	assert.Len(results, 0, "Invalid number of results.")
-
 }

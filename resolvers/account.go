@@ -111,18 +111,18 @@ func (r *tokensResolver) RefreshToken() string {
 }
 
 // Accounts resolves accounts(name: String) query
-func (r *RootResolver) Accounts(args struct{ Name *string }) []*accountResolver {
+func (r *RootResolver) Accounts(args struct{ Name *string }) ([]*accountResolver, error) {
 	defer r.crud.CloseCopy()
 	if args.Name == nil {
 		// TODO return all names
 	}
-	rawAccounts, _ := r.crud.FindAll(accountsCollection, nil)
+	rawAccounts, err := r.crud.FindAll(accountsCollection, nil)
 	results := make([]*accountResolver, 0)
 	for _, r := range rawAccounts {
 		account := transformAccount(r)
 		results = append(results, &accountResolver{&account})
 	}
-	return results
+	return results, err
 }
 
 // CreateAccount resolves the query of the same name
