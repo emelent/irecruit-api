@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +44,7 @@ func TestAccountList(t *testing.T) {
 	assert.Len(results, len(accounts), msgInvalidResultCount)
 }
 
-func TestRemoveAccount(t *testing.T) {
+func TestRemoveAccountValid(t *testing.T) {
 	//prepare handler
 	crud := loadedCrud()
 	handler := createGqlHandler(crud)
@@ -80,4 +82,44 @@ func TestRemoveAccount(t *testing.T) {
 	assert.True(dOk, msgInvalidResponseType)
 	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
 	assert.Equal(result, "Account successfully removed.", msgInvalidResult)
+}
+
+func TestRemoveAccountInvalid(t *testing.T) {
+	//prepare handler
+	crud := loadedCrud()
+	handler := createGqlHandler(crud)
+
+	//prepare request
+	method := "removeAccount"
+	queryFormat := `
+		mutation{
+			%s(
+				id: "%s"
+			)
+		}
+	`
+
+	input := []string{
+		"123",
+		bson.NewObjectId().Hex(),
+	}
+	//make request
+	for _, in := range input {
+		query := fmt.Sprintf(queryFormat, method, in)
+		req := createGqlRequest(query, nil)
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, req)
+		res := w.Result()
+
+		//process response
+		assert := assert.New(t)
+		response, err := getJSONResponse(res)
+		if err != nil {
+			assert.Fail("Failed to process response:", err)
+		}
+
+		//make assertions
+		assert.Contains(response, "errors", msgNoError)
+	}
+
 }
