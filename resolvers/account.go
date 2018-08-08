@@ -155,8 +155,12 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 // RemoveAccount removes an account
 func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
 	defer r.crud.CloseCopy()
-	id := bson.ObjectIdHex(string(args.ID))
 	genericErr := "Failed to remove account."
+	idStr := string(args.ID)
+	if !bson.IsObjectIdHex(idStr) {
+		return nil, er.NewInternalError(genericErr)
+	}
+	id := bson.ObjectIdHex(idStr)
 
 	// check if there's an account with that id
 	_, err := r.crud.FindOne(accountsCollection, &bson.M{"_id": id})
