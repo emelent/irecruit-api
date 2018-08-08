@@ -103,6 +103,7 @@ const (
 	msgInvalidResponseType = "Invalid data response type."
 	msgInvalidResultCount  = "Invalid number of results."
 	msgInvalidResult       = "Invalid result."
+	msgNoError             = "No outputted error."
 )
 
 // 3 hunter IDs
