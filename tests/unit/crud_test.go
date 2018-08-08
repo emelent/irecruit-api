@@ -67,9 +67,24 @@ func TestCrudFindOne(t *testing.T) {
 
 	//make assertions
 	assert := assert.New(t)
-	assert.Equal(p0["Name"], r1["Name"], "crud.FindOne with nil query does not return expected result")
-	assert.Equal(p0["Name"], r2["Name"], "crud.FindOne with matching query does not return expected result")
+	assert.Equal(p0["_id"], r1["_id"], "crud.FindOne with nil query does not return expected result")
+	assert.Equal(p0["_id"], r2["_id"], "crud.FindOne with matching query does not return expected result")
 	assert.Nil(r3, "crud.FindOne with non-matching query does not return expected result")
+}
+
+func TestCrudFindID(t *testing.T) {
+	crud := loadedCRUD()
+	p0 := bson.M(structs.Map(people[0]))
+
+	// prepare results
+	i1, _ := crud.FindID(collection, p0["_id"]) // expect one                         // expect one
+	r1 := i1.(bson.M)
+	r2, _ := crud.FindID(collection, nil) // expect none
+
+	//make assertions
+	assert := assert.New(t)
+	assert.Equal(p0["_id"], r1["_id"], "crud.FindID with nil query does not return expected result")
+	assert.Nil(r2, "crud.FindID with non-matching query does not return nil")
 }
 
 func TestCrudUpdateID(t *testing.T) {

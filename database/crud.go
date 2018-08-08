@@ -66,6 +66,19 @@ func (db *CRUD) FindOne(collection string, query *bson.M) (interface{}, error) {
 	return result, err
 }
 
+//FindID finds a db entry by ID
+func (db *CRUD) FindID(collection string, id interface{}) (interface{}, error) {
+	if db.Session == nil { // in the mock
+		result := filterFirst(db.TempStorage[collection], matchID(id))
+		return result, nil
+	}
+
+	db.InitCopy()
+	var result interface{}
+	err := db.CopySession.DB(config.DbName).C(collection).FindId(id).One(&result)
+	return result, err
+}
+
 //UpdateID updates entry by id
 func (db *CRUD) UpdateID(collection string, id bson.ObjectId, updates bson.M) error {
 	if db.Session == nil { // mocking
@@ -145,6 +158,13 @@ func filterFirst(in []bson.M, fn func(bson.M) bool) interface{} {
 	}
 	return nil
 }
+
+func matchID(id interface{}) func(bson.M) bool {
+	return func(m bson.M) bool {
+		return m["_id"] == id
+	}
+}
+
 func matchQuery(query *bson.M) func(bson.M) bool {
 	if query == nil {
 		return func(m bson.M) bool {
