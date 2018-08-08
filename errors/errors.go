@@ -12,6 +12,11 @@ func (e CustomError) Error() string {
 	return e.Message
 }
 
+// NewCRUDError creates a new missing field error
+func NewCRUDError(msg string) CustomError {
+	return CustomError{msg, 200}
+}
+
 // NewMissingFieldError creates a new missing field error
 func NewMissingFieldError(field string) CustomError {
 	msg := fmt.Sprintf("'%s' field is required.", field)
