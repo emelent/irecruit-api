@@ -20,8 +20,9 @@ import (
 func loadedCrud() *db.CRUD {
 	crud := db.NewCRUD(nil)
 
-	// load accounts into db
+	// load data into db
 	loadAccounts(crud)
+	loadTokenManagers(crud)
 
 	return crud
 }
@@ -39,6 +40,13 @@ func loadAccounts(crud *db.CRUD) {
 		}
 
 		crud.Insert(accountsCollection, acc)
+	}
+}
+
+func loadTokenManagers(crud *db.CRUD) {
+	for i, mgr := range tokenManagers {
+		mgr.AccountID = accounts[i].ID
+		crud.Insert(tokenManagersCollection, mgr)
 	}
 }
 
@@ -81,7 +89,21 @@ func getJSONResponse(res *http.Response) (map[string]interface{}, error) {
 // ================
 //
 
-const accountsCollection = "accounts"
+// collections
+const (
+	accountsCollection      = "accounts"
+	tokenManagersCollection = "token_managers"
+)
+
+// messages
+const (
+	msgUnexpectedError     = "Unexpected error in response."
+	msgInvalidResponse     = "Invalid response."
+	msgMissingResponseData = "Missing response data."
+	msgInvalidResponseType = "Invalid data response type."
+	msgInvalidResultCount  = "Invalid number of results."
+	msgInvalidResult       = "Invalid result."
+)
 
 // 3 hunter IDs
 var hunterIDs = []bson.ObjectId{
@@ -94,6 +116,16 @@ var hunterIDs = []bson.ObjectId{
 var recruitIDs = []bson.ObjectId{
 	bson.NewObjectId(),
 	bson.NewObjectId(),
+}
+
+// 6  token managers
+var tokenManagers = []models.TokenManager{
+	{ID: bson.NewObjectId()},
+	{ID: bson.NewObjectId()},
+	{ID: bson.NewObjectId()},
+	{ID: bson.NewObjectId()},
+	{ID: bson.NewObjectId()},
+	{ID: bson.NewObjectId()},
 }
 
 // 6 user accounts
