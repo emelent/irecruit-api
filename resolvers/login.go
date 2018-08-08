@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	er "../errors"
 	mware "../middleware"
 	utils "../utils"
 	"gopkg.in/mgo.v2/bson"
@@ -13,23 +14,21 @@ import (
 const tokenMgrCollection = "token_managers"
 
 // Login resolves graphql method of the same name
-func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) *tokensOrFailResolver {
+func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) (*tokensResolver, error) {
 	rawAccount, err := r.crud.FindOne(accountsCollection, &bson.M{"email": args.Email})
-	failedLogin := "Invalid username or email."
-	genericErr := "Something went wrong."
 	if err != nil {
-		return &tokensOrFailResolver{&failResolver{failedLogin}}
+		return nil, er.NewInvalidCredentialsError()
 	}
 
 	account := transformAccount(rawAccount)
 	if !account.CheckPassword(args.Password) {
-		return &tokensOrFailResolver{&failResolver{failedLogin}}
+		return nil, er.NewInvalidCredentialsError()
 	}
 
 	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": account.ID})
 	if err != nil {
 		fmt.Println("Failed to find TokenManager =>", err)
-		return &tokensOrFailResolver{&failResolver{genericErr}}
+		return nil, er.NewGenericError()
 	}
 	tokenMgr := transformTokenManager(rawTokenMgr)
 
@@ -43,7 +42,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		tokenStr, err := utils.CreateRefreshToken(id)
 		if err != nil {
 			fmt.Println("Failed to create new refresh token =>", err)
-			return &tokensOrFailResolver{&failResolver{genericErr}}
+			return nil, er.NewGenericError()
 		}
 		tokenMgr.RefreshToken = tokenStr
 
@@ -58,9 +57,9 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	access, err := utils.CreateAccessToken(id, ua)
 	if err != nil {
 		fmt.Println("Failed to create access token =>", err)
-		return &tokensOrFailResolver{&failResolver{genericErr}}
+		return nil, er.NewGenericError()
 	}
 
-	result := &tokensResolver{refresh: tokenMgr.RefreshToken, access: access}
-	return &tokensOrFailResolver{result}
+	return &tokensResolver{refresh: tokenMgr.RefreshToken, access: access}, nil
+
 }

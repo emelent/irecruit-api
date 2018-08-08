@@ -17,9 +17,6 @@ var AccountSchema = Schema{
 			refreshToken: String!
 			accessToken: String!
 		}
-
-		union AccountOrFail = Account | Fail
-		union TokensOrFail = Tokens | Fail
 		
 		input AccountDetails{
 			email: String!
@@ -35,7 +32,7 @@ var AccountSchema = Schema{
 		accounts(name: String): [Account]!
 	`,
 	Mutations: `
-		removeAccount(id: ID!): AccountOrFail
-		createAccount(info: AccountDetails!): TokensOrFail
+		removeAccount(id: ID!): String
+		createAccount(info: AccountDetails!): Tokens
 	`,
 }
