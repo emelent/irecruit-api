@@ -2,7 +2,6 @@ package functionaltests
 
 import (
 	"fmt"
-	"net/http/httptest"
 	"testing"
 
 	"gopkg.in/mgo.v2/bson"
@@ -18,16 +17,12 @@ func TestAccountList(t *testing.T) {
 	//prepare request
 	method := "accounts"
 	query := fmt.Sprintf(`query{%s{id,name,surname,email}}`, method)
-	req := createGqlRequest(query, nil)
 
-	//make request
-	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, req)
-	res := w.Result()
+	// request and respond
+	response, err := gqlRequestAndRespond(handler, query, nil)
 
 	//process response
 	assert := assert.New(t)
-	response, err := getJSONResponse(res)
 	if err != nil {
 		assert.Fail("Failed to process response:", err)
 	}
@@ -58,16 +53,12 @@ func TestRemoveAccountValid(t *testing.T) {
 			)
 		}
 	`, method, accounts[0].ID.Hex())
-	req := createGqlRequest(query, nil)
 
-	//make request
-	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, req)
-	res := w.Result()
+	// request and respond
+	response, err := gqlRequestAndRespond(handler, query, nil)
 
 	//process response
 	assert := assert.New(t)
-	response, err := getJSONResponse(res)
 	if err != nil {
 		assert.Fail("Failed to process response:", err)
 	}
@@ -106,14 +97,10 @@ func TestRemoveAccountInvalid(t *testing.T) {
 	//make request
 	for _, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
-		req := createGqlRequest(query, nil)
-		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, req)
-		res := w.Result()
+		response, err := gqlRequestAndRespond(handler, query, nil)
 
 		//process response
 		assert := assert.New(t)
-		response, err := getJSONResponse(res)
 		if err != nil {
 			assert.Fail("Failed to process response:", err)
 		}
@@ -121,5 +108,9 @@ func TestRemoveAccountInvalid(t *testing.T) {
 		//make assertions
 		assert.Contains(response, "errors", msgNoError)
 	}
+
+}
+
+func TestCreateAccountValid(t *testing.T) {
 
 }

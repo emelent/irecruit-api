@@ -84,6 +84,16 @@ func getJSONResponse(res *http.Response) (map[string]interface{}, error) {
 	return response, nil
 }
 
+func gqlRequestAndRespond(handler http.Handler, query string, variables *map[string]interface{}) (map[string]interface{}, error) {
+	req := createGqlRequest(query, nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+	res := w.Result()
+
+	response, err := getJSONResponse(res)
+	return response, err
+}
+
 // ================
 // DATA
 // ================
