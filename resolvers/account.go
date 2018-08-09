@@ -101,16 +101,18 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	account.Email = info.Email
 	account.Surname = info.Surname
 	account.AccessLevel = 0
-	account.SetPassword(info.Password)
+	account.Password = info.Password
 	account.ID = bson.NewObjectId()
 	genericErr := "Failed to create Account"
 
 	// validate account data
 	err := account.OK()
 	if err != nil {
-		log.Println("Account validation failed =>", err)
 		return nil, err
 	}
+
+	// hash the new password
+	account.HashPassword()
 
 	// store account in db
 	err = r.crud.Insert(accountsCollection, account)
