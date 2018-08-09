@@ -39,6 +39,11 @@ func NewInvalidCredentialsError() CustomError {
 	return CustomError{"Invalid credentials.", 004}
 }
 
+// NewInputError returns a new invalid credentials error
+func NewInputError(msg string) CustomError {
+	return CustomError{msg, 005}
+}
+
 // NewInternalError creates a new internal error
 func NewInternalError(msg string) CustomError {
 	return CustomError{msg, 101}
