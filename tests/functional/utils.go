@@ -3,6 +3,7 @@ package functionaltests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -39,6 +40,14 @@ func loadAccounts(crud *db.CRUD) {
 			acc.RecruitID = &(recruitIDs[(i - numHunters)])
 		}
 
+		// validate before insertion
+		if err := acc.OK(); err != nil {
+			fmt.Printf("Mock accounts[%v] : %s", i, err.Error())
+			break
+		}
+
+		// hash password before insertion
+		acc.HashPassword()
 		crud.Insert(accountsCollection, acc)
 	}
 }
@@ -46,6 +55,13 @@ func loadAccounts(crud *db.CRUD) {
 func loadTokenManagers(crud *db.CRUD) {
 	for i, mgr := range tokenManagers {
 		mgr.AccountID = accounts[i].ID
+
+		// validate before insertion
+		if err := mgr.OK(); err != nil {
+			fmt.Printf("Mock tokenManagers[%v] : %s", i, err.Error())
+			break
+		}
+
 		crud.Insert(tokenManagersCollection, mgr)
 	}
 }
@@ -144,15 +160,15 @@ var accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "mark@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "Mark",
 		Surname:     "Smith",
-		AccessLevel: 9,
+		AccessLevel: 0,
 	},
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jdoe@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "John",
 		Surname:     "Doe",
 		AccessLevel: 0,
@@ -160,7 +176,7 @@ var accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "lisa@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "Lisa",
 		Surname:     "Smith",
 		AccessLevel: 0,
@@ -168,7 +184,7 @@ var accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "erin@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "Erin",
 		Surname:     "Lona",
 		AccessLevel: 0,
@@ -176,7 +192,7 @@ var accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jake@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "Jake",
 		Surname:     "Tinder",
 		AccessLevel: 0,
@@ -184,9 +200,9 @@ var accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "thato@gmail.com",
-		Password:    "123",
+		Password:    "password",
 		Name:        "Thato",
 		Surname:     "Mopani",
-		AccessLevel: 0,
+		AccessLevel: 9, // system admin
 	},
 }
