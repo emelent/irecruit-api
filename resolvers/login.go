@@ -2,7 +2,7 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
 
 	er "../errors"
@@ -27,7 +27,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 
 	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": account.ID})
 	if err != nil {
-		fmt.Println("Failed to find TokenManager =>", err)
+		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.NewGenericError()
 	}
 	tokenMgr := transformTokenManager(rawTokenMgr)
@@ -36,12 +36,16 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	id := account.ID.Hex()
 	ua := ctx.Value(mware.UaKey).(string)
 	claims, err := utils.GetTokenClaims(tokenMgr.RefreshToken)
+	if err != nil {
+		log.Println("Invalid refresh token =>", err)
+		return nil, er.NewGenericError()
+	}
 	t := time.Unix(claims.StandardClaims.ExpiresAt, 0)
 	if time.Until(t) < time.Hour*24 {
 		// create new refresh token
 		tokenStr, err := utils.CreateRefreshToken(id)
 		if err != nil {
-			fmt.Println("Failed to create new refresh token =>", err)
+			log.Println("Failed to create new refresh token =>", err)
 			return nil, er.NewGenericError()
 		}
 		tokenMgr.RefreshToken = tokenStr
@@ -56,7 +60,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	// create access token
 	access, err := utils.CreateAccessToken(id, ua)
 	if err != nil {
-		fmt.Println("Failed to create access token =>", err)
+		log.Println("Failed to create access token =>", err)
 		return nil, er.NewGenericError()
 	}
 
