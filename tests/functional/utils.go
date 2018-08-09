@@ -13,6 +13,7 @@ import (
 	db "../../database"
 	models "../../models"
 	route "../../routing"
+	utils "../../utils"
 )
 
 // Functional test general helper functions
@@ -56,6 +57,14 @@ func loadTokenManagers(crud *db.CRUD) {
 	for i, mgr := range tokenManagers {
 		mgr.AccountID = accounts[i].ID
 
+		//create refresh token
+		refresh, err := utils.CreateRefreshToken(accounts[i].ID.Hex())
+		if err != nil {
+			fmt.Printf("Mock token_manager[%v] : %s", i, err.Error())
+			break
+		}
+		mgr.RefreshToken = refresh
+
 		// validate before insertion
 		if err := mgr.OK(); err != nil {
 			fmt.Printf("Mock tokenManagers[%v] : %s", i, err.Error())
@@ -83,6 +92,8 @@ func createGqlRequest(query string, variables *map[string]interface{}) *http.Req
 	postData, _ := json.Marshal(data)
 	req := httptest.NewRequest("POST", "/", bytes.NewBuffer(postData))
 	req.Header.Add("Content-Type", "application/json")
+	// req.Header.Add("User-Agent", "go-tester")
+
 	return req
 }
 
