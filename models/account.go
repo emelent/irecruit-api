@@ -1,6 +1,8 @@
 package models
 
 import (
+	"regexp"
+
 	e "../errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
@@ -23,25 +25,29 @@ type Account struct {
 
 //OK validates Account fields
 func (a *Account) OK() error {
-	if a.Email == "" {
-		return e.NewMissingFieldError("Email")
+	reEmail := regexp.MustCompile(`^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$`)
+	rePassword := regexp.MustCompile(`.{6}`)
+	reName := regexp.MustCompile(`[a-zA-Z]{3,}`)
+	reSurname := regexp.MustCompile(`[a-zA-Z]{3,}`)
+	if !reEmail.MatchString(a.Email) {
+		return e.NewInvalidFieldError("Email")
 	}
-	if a.Password == "" {
-		return e.NewMissingFieldError("Password")
+	if !rePassword.MatchString(a.Password) {
+		return e.NewInputError("Password must be at least 6 characters long.")
 	}
-	if a.Name == "" {
-		return e.NewMissingFieldError("Name")
+	if !reName.MatchString(a.Name) {
+		return e.NewInputError("Name must be at least 3 alphabetic characters.")
 	}
-	if a.Surname == "" {
-		return e.NewMissingFieldError("Name")
+	if !reSurname.MatchString(a.Surname) {
+		return e.NewInputError("Surname must be at least 3 alphabetic characters.")
 	}
 
 	return nil
 }
 
-// SetPassword sets account password
-func (a *Account) SetPassword(password string) error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+// HashPassword sets account password
+func (a *Account) HashPassword() error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(a.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
