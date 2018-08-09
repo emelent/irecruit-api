@@ -29,7 +29,7 @@ var AccountSchema = Schema{
 	`,
 	Queries: `
 		# Retrieve all accounts
-		accounts(name: String): [Account]!
+		accounts: [Account]!
 	`,
 	Mutations: `
 		removeAccount(id: ID!): String

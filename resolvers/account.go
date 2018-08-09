@@ -76,11 +76,8 @@ func (r *tokensResolver) RefreshToken() string {
 }
 
 // Accounts resolves accounts(name: String) query
-func (r *RootResolver) Accounts(args struct{ Name *string }) ([]*accountResolver, error) {
+func (r *RootResolver) Accounts() ([]*accountResolver, error) {
 	defer r.crud.CloseCopy()
-	if args.Name == nil {
-		// TODO return all names
-	}
 	rawAccounts, err := r.crud.FindAll(accountsCollection, nil)
 	results := make([]*accountResolver, 0)
 	for _, r := range rawAccounts {
