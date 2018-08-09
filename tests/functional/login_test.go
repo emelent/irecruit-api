@@ -44,3 +44,51 @@ func TestLoginValid(t *testing.T) {
 	assert.Contains(resultTokens, "accessToken", msgMissingResponseData)
 	assert.Contains(resultTokens, "refreshToken", msgMissingResponseData)
 }
+
+func TestLoginInvalid(t *testing.T) {
+	//prepare handler
+	crud := loadedCrud()
+	handler := createGqlHandler(crud)
+
+	//prepare request
+	method := "login"
+	queryFormat := `
+		mutation {
+			%s(%s) {
+				refreshToken
+				accessToken
+			}
+		}	  
+	`
+	acc := accounts[0]
+
+	// prepare invalid input
+	input := []string{
+		fmt.Sprintf(`
+			# case 1 invalid email
+			email: "trash", password: "%s"
+		`, acc.Password),
+		fmt.Sprintf(`
+			# case 2 invalid password
+			email: "%s", password: "trash"
+		`, acc.Email),
+		`
+			# case 3 invalid email and password
+			email: "trash", password: "trash"
+		`,
+	}
+
+	for i, in := range input {
+		// request and respond
+		query := fmt.Sprintf(queryFormat, method, in)
+		response, err := gqlRequestAndRespond(handler, query, nil)
+
+		//process response
+		assert := assert.New(t)
+		if err != nil {
+			assert.Fail("Failed to process response:", err)
+		}
+		//make assertions
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
+	}
+}
