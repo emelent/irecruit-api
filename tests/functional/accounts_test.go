@@ -130,7 +130,7 @@ func TestCreateAccountValid(t *testing.T) {
 	input := `
 		info: {
 			email: "test@gmail.com",
-			password:"test",
+			password:"password"
 			name: "Test",
 			surname:"User"
 		}
@@ -177,39 +177,66 @@ func TestCreateAccountInvalid(t *testing.T) {
 
 	input := []string{
 		`
-			# missing field, (email)
+			# case 1 missing field, (email)
 			info: {
-				password:"test",
+				password:"password"
 				name: "Test",
 				surname:"User"
 			}
 		`,
 		`
-			# invalid data type
+			# case 2 invalid data type
 			info: {
 				email: 14,
-				password:"test",
+				password:"password"
 				name: "Test",
 				surname:"User"
 			}	
 		`,
 		`
-			# invalid data content
+			# case 3 invalid email
 			info: {
 				email: "marshia",
-				password:"test",
+				password:"password"
 				name: "Test",
 				surname:"User"
 			}	
 		`,
+		`
+			# case 4 short password
+			info: {
+				email: "marshia@gmail.com",
+				password:"123"
+				name: "Test",
+				surname:"User"
+			}	
+		`,
+		`
+			# case 5 short name
+			info: {
+				email: "marshia@gmail.com",
+				password:"password"
+				name: "T",
+				surname:"User"
+			}	
+		`,
+		`
+			# case 6 short surname
+			info: {
+				email: "marshia@gmail.com",
+				password:"password"
+				name: "Test",
+				surname:"u"
+			}	
+		`,
 
-		// can't test duplicate entries because mock doesn't have that infrastructure
+		// can't test duplicate key entries because mock doesn't have that infrastructure
 		// error is on the db layer
 		// fmt.Sprintf(`
 		// 	# duplicate email
 		// 	info: {
 		// 		email: "%s",
-		// 		password:"test",
+		// 		password:"password"
 		// 		name: "Test",
 		// 		surname:"User"
 		// 	}
@@ -227,7 +254,7 @@ func TestCreateAccountInvalid(t *testing.T) {
 		}
 
 		//make assertions
-		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i, msgUnexpectedError))
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgUnexpectedError))
 	}
 
 }
