@@ -254,7 +254,7 @@ func TestCreateAccountInvalid(t *testing.T) {
 		}
 
 		//make assertions
-		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgUnexpectedError))
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
 	}
 
 }
