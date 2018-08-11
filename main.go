@@ -12,6 +12,7 @@ import (
 	config "./config"
 	db "./database"
 	mware "./middleware"
+	moc "./mocks"
 	route "./routing"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -21,12 +22,15 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// get cli of args
-	mock := flag.Bool("mock", false, "Uses mock database if true.")
+	mockIt := flag.Bool("mock", false, "Uses mock database if true.")
 	flag.Parse()
 
 	// setup crud system
 	var crud *db.CRUD
-	if *mock != true {
+	if *mockIt {
+		log.Println("Using temporary mock db.")
+		crud = moc.NewLoadedCRUD()
+	} else {
 		// connect to mongo
 		log.Println("Dialing mongodb ...")
 		mongoSession, err := mgo.Dial(config.DbHost)
@@ -34,9 +38,6 @@ func main() {
 		if err != nil {
 			log.Println("Mongodb didn't pick up, falling back to temporary mock database.")
 		}
-	} else {
-		log.Println("Using temporary mock db.")
-		crud = db.NewCRUD(nil)
 	}
 
 	// closes db connection if any
