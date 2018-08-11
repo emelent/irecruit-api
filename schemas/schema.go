@@ -22,6 +22,7 @@ var intermediateTypes = `
 var DefaultSchemas = []Schema{
 	AccountSchema,
 	LoginSchema,
+	RecruitSchema,
 }
 
 // CreateSchema creates a schema from given Schema structs
