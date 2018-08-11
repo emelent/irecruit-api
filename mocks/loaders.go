@@ -28,7 +28,6 @@ func LoadAccounts(crud *db.CRUD) {
 	for i, acc := range Accounts {
 		if i < numRecruits { // first n accounts have recruit profiles
 			acc.RecruitID = Recruits[i].ID
-			Recruits[i].AccountID = acc.ID
 		} else if i < numHunters+numRecruits { // next m accounts have hunter profiles
 			acc.HunterID = HunterIDs[i-numRecruits]
 		}
