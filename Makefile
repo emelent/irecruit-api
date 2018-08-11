@@ -11,4 +11,4 @@ build:
 static-build:
 	${GO_BUILD_ENV} ${CC} build -a -installsuffix cgo -o ${BIN} .
 test:
-	${CC} test
+	${CC} test ./tests/...
