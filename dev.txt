@@ -1,3 +1,6 @@
 TODO
 	
-	- refactor and start TDD since we're done experimenting
+	- begin experimenting with Viewer model
+	- start TDD
+	- we'll review the token system later on
+	
