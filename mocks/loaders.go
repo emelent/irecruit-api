@@ -22,14 +22,15 @@ func NewLoadedCRUD() *db.CRUD {
 
 // LoadAccounts loads all account data
 func LoadAccounts(crud *db.CRUD) {
-	numHunters := len(HunterIDs)
 	numRecruits := len(Recruits)
+	numHunters := len(HunterIDs)
 
 	for i, acc := range Accounts {
-		if i < numHunters { // first n users are hunters
-			acc.HunterID = &(HunterIDs[i])
-		} else if i < numHunters+numRecruits { // next m users are recruits
-			acc.RecruitID = &(Recruits[(i - numHunters)].ID)
+		if i < numRecruits { // first n accounts have recruit profiles
+			acc.RecruitID = Recruits[i].ID
+			Recruits[i].AccountID = acc.ID
+		} else if i < numHunters+numRecruits { // next m accounts have hunter profiles
+			acc.HunterID = HunterIDs[i-numRecruits]
 		}
 
 		// validate before insertion

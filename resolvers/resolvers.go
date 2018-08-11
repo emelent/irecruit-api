@@ -30,14 +30,8 @@ func transformAccount(in interface{}) models.Account {
 
 		mapstructure.Decode(v, &account)
 		account.ID = v["_id"].(bson.ObjectId)
-		if v["hunter_id"] != nil {
-			id := (v["hunter_id"]).(*bson.ObjectId)
-			account.HunterID = id
-		}
-		if v["recruit_id"] != nil {
-			id := (v["recruit_id"]).(*bson.ObjectId)
-			account.RecruitID = id
-		}
+		account.HunterID = (v["hunter_id"]).(bson.ObjectId)
+		account.RecruitID = (v["recruit_id"]).(bson.ObjectId)
 	case models.Account:
 		account = v
 	}

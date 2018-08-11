@@ -9,8 +9,8 @@ var AccountSchema = Schema{
 			surname: String!
 			email: String!
 			#access_level: Int!
-			hunter_id: ID
-			recruit_id: ID
+			hunter_id: ID!
+			recruit_id: ID!
 		}	
 		
 		type Tokens {
@@ -34,5 +34,6 @@ var AccountSchema = Schema{
 	Mutations: `
 		removeAccount(id: ID!): String
 		createAccount(info: AccountDetails!): Tokens
+		#updateAccount()
 	`,
 }

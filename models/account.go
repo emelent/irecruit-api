@@ -19,8 +19,8 @@ type Account struct {
 	Surname     string `json:"surname" bson:"surname"`
 	AccessLevel int    `json:"access_level" bson:"access_level"`
 
-	HunterID  *bson.ObjectId `json:"hunter_id" bson:"hunter_id"`
-	RecruitID *bson.ObjectId `json:"recruit_id" bson:"recruit_id"`
+	HunterID  bson.ObjectId `json:"hunter_id" bson:"hunter_id"`
+	RecruitID bson.ObjectId `json:"recruit_id" bson:"recruit_id"`
 }
 
 //OK validates Account fields

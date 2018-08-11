@@ -45,21 +45,19 @@ func (r *accountResolver) AccessLevel() int {
 	return r.a.AccessLevel
 }
 
-func (r *accountResolver) HunterID() *graphql.ID {
-	if r.a.HunterID == nil {
-		return nil
+func (r *accountResolver) HunterID() graphql.ID {
+	if r.a.HunterID == models.NullObjectID {
+		return graphql.ID("")
 	}
-
-	id := graphql.ID(r.a.HunterID.Hex())
-	return &id
+	return graphql.ID(r.a.HunterID.Hex())
 }
 
-func (r *accountResolver) RecruitID() *graphql.ID {
-	if r.a.RecruitID == nil {
-		return nil
+func (r *accountResolver) RecruitID() graphql.ID {
+	if r.a.RecruitID == models.NullObjectID {
+		return graphql.ID("")
 	}
-	id := graphql.ID(r.a.RecruitID.Hex())
-	return &id
+
+	return graphql.ID(r.a.RecruitID.Hex())
 }
 
 type tokensResolver struct {
@@ -100,6 +98,8 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	account.AccessLevel = 0
 	account.Password = info.Password
 	account.ID = bson.NewObjectId()
+	account.HunterID = models.NullObjectID
+	account.RecruitID = models.NullObjectID
 	genericErr := "Failed to create Account"
 
 	// validate account data
