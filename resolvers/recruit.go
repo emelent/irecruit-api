@@ -10,8 +10,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const recruitsCollection = "recruits"
-
 type recruitDetails struct {
 	Phone      *string
 	Email      *string
@@ -101,12 +99,26 @@ func (r *recruitResolver) Vid2Url() string {
 // Recruits resolves recruits gql method
 func (r *RootResolver) Recruits() ([]*recruitResolver, error) {
 	defer r.crud.CloseCopy()
-	rawRecruits, err := r.crud.FindAll(recruitsCollection, nil)
+
 	results := make([]*recruitResolver, 0)
-	var account models.Account
-	for _, r := range rawRecruits {
-		recruit := transformRecruit(r)
-		results = append(results, &recruitResolver{&recruit, &account})
+	// get recruit profiles
+	rawRecruits, err := r.crud.FindAll(config.RecruitsCollection, nil)
+	if err != nil {
+		log.Println(err)
+		return results, er.NewGenericError()
+	}
+
+	// process results
+	for _, raw := range rawRecruits {
+		var account models.Account
+		recruit := transformRecruit(raw)
+		rawAccount, e := r.crud.FindOne(config.AccountsCollection, &bson.M{
+			"recruit_id": recruit.ID,
+		})
+		if e == nil {
+			account = transformAccount(rawAccount)
+			results = append(results, &recruitResolver{&recruit, &account})
+		}
 	}
 	return results, err
 }
@@ -130,7 +142,7 @@ func (r *RootResolver) CreateRecruit(args struct {
 
 	// check if the account has a recruit profile
 	account := transformAccount(rawAccount)
-	if account.RecruitID != nil {
+	if account.RecruitID != "" {
 		return nil, er.NewInputError("Account already has a Recruit profile.")
 	}
 
@@ -139,10 +151,6 @@ func (r *RootResolver) CreateRecruit(args struct {
 	if info == nil {
 		return nil, er.NewMissingFieldError("info")
 	}
-
-	// create recruit profile
-	var recruit models.Recruit
-	recruit.ID = bson.NewObjectId()
 
 	// validate info
 	if info.Province == nil {
@@ -170,6 +178,9 @@ func (r *RootResolver) CreateRecruit(args struct {
 		return nil, er.NewMissingFieldError("info.vid2_url")
 	}
 
+	// create recruit profile
+	var recruit models.Recruit
+	recruit.ID = bson.NewObjectId()
 	recruit.Province = *info.Province
 	recruit.City = *info.City
 	recruit.Gender = *info.Gender
