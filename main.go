@@ -28,6 +28,7 @@ func main() {
 	// setup crud system
 	var crud *db.CRUD
 	if *mockIt {
+		// prepare mock
 		log.Println("Using temporary mock db.")
 		crud = moc.NewLoadedCRUD()
 	} else {
