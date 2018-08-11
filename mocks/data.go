@@ -94,6 +94,14 @@ var Accounts = []models.Account{
 	},
 	{
 		ID:          bson.NewObjectId(),
+		Email:       "moti@gmail.com",
+		Password:    "password",
+		Name:        "Morlin",
+		Surname:     "Tinder",
+		AccessLevel: 0,
+	},
+	{
+		ID:          bson.NewObjectId(),
 		Email:       "thato@gmail.com",
 		Password:    "password",
 		Name:        "Thato",
