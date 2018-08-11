@@ -8,7 +8,9 @@ import (
 	"net/http/httptest"
 
 	db "../../database"
+	moc "../../mocks"
 	route "../../routing"
+	"github.com/stretchr/testify/assert"
 )
 
 // Functional test general helper functions
@@ -59,9 +61,25 @@ func gqlRequestAndRespond(handler http.Handler, query string, variables *map[str
 	return response, err
 }
 
+func createLoadedGqlHandler() http.Handler {
+	crud := moc.NewLoadedCRUD()
+	return createGqlHandler(crud)
+}
+
+func assertGqlData(method string, response map[string]interface{}, assert *assert.Assertions) map[string]interface{} {
+	dataPortion, dOk := response["data"].(map[string]interface{})
+
+	assert.NotContains(response, "errors", msgUnexpectedError)
+	assert.Contains(response, "data", msgInvalidResponse)
+	assert.Contains(response["data"], method, msgMissingResponseData)
+	assert.True(dOk, msgInvalidResponseType)
+	return dataPortion
+}
+
 // messages
 const (
 	msgUnexpectedError     = "Unexpected error in response."
+	msgUnexpectedData      = "Unexpected data in response."
 	msgInvalidResponse     = "Invalid response."
 	msgMissingResponseData = "Missing response data."
 	msgInvalidResponseType = "Invalid data response type."
