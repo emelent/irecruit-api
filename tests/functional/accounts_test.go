@@ -92,11 +92,11 @@ func TestRemoveAccountInvalid(t *testing.T) {
 	`
 
 	input := []string{
-		"123",
-		bson.NewObjectId().Hex(),
+		"123", // case 1
+		bson.NewObjectId().Hex(), // case 2
 	}
 	//make request
-	for _, in := range input {
+	for i, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
 		response, err := gqlRequestAndRespond(handler, query, nil)
 
@@ -107,7 +107,7 @@ func TestRemoveAccountInvalid(t *testing.T) {
 		}
 
 		//make assertions
-		assert.Contains(response, "errors", msgNoError)
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
 	}
 
 }
