@@ -1,23 +1,30 @@
 package resolvers
 
 import (
+	"log"
+
+	config "../config"
+	er "../errors"
 	models "../models"
 	graphql "github.com/graph-gophers/graphql-go"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const recruitsCollection = "recruits"
 
 type recruitDetails struct {
-	Province    *string
-	City        *string
-	Gender      *string
-	Disability  *string
-	Vid1Url     *string
-	Vid2Url     *string
-	Qa1Question *string
-	Qa1Answer   *string
-	Qa2Question *string
-	Qa2Answer   *string
+	Phone      *string
+	Email      *string
+	Province   *string
+	City       *string
+	Gender     *string
+	Disability *string
+	Vid1Url    *string
+	Vid2Url    *string
+	// Qa1Question *string
+	// Qa1Answer   *string
+	// Qa2Question *string
+	// Qa2Answer   *string
 }
 
 // QA Resolver
@@ -109,5 +116,86 @@ func (r *RootResolver) CreateRecruit(args struct {
 	AccountID graphql.ID
 	Info      *recruitDetails
 }) (*recruitResolver, error) {
-	return nil, nil
+	// check if id is valid
+	id := string(args.AccountID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.NewInvalidFieldError("id")
+	}
+
+	// check if there's an account with that id, i.e. retrieve the account dummy
+	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(id))
+	if err != nil {
+		return nil, er.NewInvalidFieldError("id")
+	}
+
+	// check if the account has a recruit profile
+	account := transformAccount(rawAccount)
+	if account.RecruitID != nil {
+		return nil, er.NewInputError("Account already has a Recruit profile.")
+	}
+
+	// check if info is nil
+	info := args.Info
+	if info == nil {
+		return nil, er.NewMissingFieldError("info")
+	}
+
+	// create recruit profile
+	var recruit models.Recruit
+	recruit.ID = bson.NewObjectId()
+
+	// validate info
+	if info.Province == nil {
+		return nil, er.NewMissingFieldError("info.province")
+	}
+	if info.Phone == nil {
+		return nil, er.NewMissingFieldError("info.phone")
+	}
+	if info.Email == nil {
+		return nil, er.NewMissingFieldError("info.email")
+	}
+	if info.City == nil {
+		return nil, er.NewMissingFieldError("info.city")
+	}
+	if info.Gender == nil {
+		return nil, er.NewMissingFieldError("info.gender")
+	}
+	if info.Disability == nil {
+		return nil, er.NewMissingFieldError("info.disability")
+	}
+	if info.Vid1Url == nil {
+		return nil, er.NewMissingFieldError("info.vid1_url")
+	}
+	if info.Vid2Url == nil {
+		return nil, er.NewMissingFieldError("info.vid2_url")
+	}
+
+	recruit.Province = *info.Province
+	recruit.City = *info.City
+	recruit.Gender = *info.Gender
+	recruit.Disability = *info.Disability
+	recruit.Vid1Url = *info.Vid1Url
+	recruit.Vid2Url = *info.Vid2Url
+	recruit.Phone = *info.Phone
+	recruit.Email = *info.Email
+
+	// validate recruit profile
+	if err := recruit.OK(); err != nil {
+		return nil, err
+	}
+
+	// store recruit profile in database
+	if err := r.crud.Insert(config.RecruitsCollection, recruit); err != nil {
+		log.Println(err)
+		return nil, er.NewGenericError()
+	}
+
+	// attach the recruit profile to the account
+	if err := r.crud.UpdateID(config.AccountsCollection, account.ID, bson.M{
+		"recruit_id": recruit.ID,
+	}); err != nil {
+		log.Println(err)
+		return nil, er.NewGenericError()
+	}
+	return &recruitResolver{&recruit, &account}, nil
 }
