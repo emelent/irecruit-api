@@ -6,12 +6,13 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccountList(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -36,12 +37,12 @@ func TestAccountList(t *testing.T) {
 	assert.Contains(response["data"], method, msgMissingResponseData)
 	assert.True(dOk, msgInvalidResponseType)
 	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-	assert.Len(resultAccounts, len(accounts), msgInvalidResultCount)
+	assert.Len(resultAccounts, len(moc.Accounts), msgInvalidResultCount)
 }
 
 func TestRemoveAccountValid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -52,7 +53,7 @@ func TestRemoveAccountValid(t *testing.T) {
 				id: "%s"
 			)
 		}
-	`, method, accounts[0].ID.Hex())
+	`, method, moc.Accounts[0].ID.Hex())
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
@@ -77,7 +78,7 @@ func TestRemoveAccountValid(t *testing.T) {
 
 func TestRemoveAccountInvalid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -113,7 +114,7 @@ func TestRemoveAccountInvalid(t *testing.T) {
 
 func TestCreateAccountValid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -161,7 +162,7 @@ func TestCreateAccountValid(t *testing.T) {
 
 func TestCreateAccountInvalid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request

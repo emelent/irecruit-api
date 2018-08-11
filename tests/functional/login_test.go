@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"testing"
 
+	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLoginValid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -21,7 +22,7 @@ func TestLoginValid(t *testing.T) {
 				accessToken
 			}
 		}	  
-	`, method, accounts[0].Email, accounts[0].Password)
+	`, method, moc.Accounts[0].Email, moc.Accounts[0].Password)
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
@@ -47,7 +48,7 @@ func TestLoginValid(t *testing.T) {
 
 func TestLoginInvalid(t *testing.T) {
 	//prepare handler
-	crud := loadedCrud()
+	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 
 	//prepare request
@@ -60,7 +61,7 @@ func TestLoginInvalid(t *testing.T) {
 			}
 		}	  
 	`
-	acc := accounts[0]
+	acc := moc.Accounts[0]
 
 	// prepare invalid input
 	input := []string{
