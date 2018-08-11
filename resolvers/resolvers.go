@@ -22,6 +22,7 @@ func (r *RootResolver) Init(crud *db.CRUD) {
 	r.crud = crud
 }
 
+// transform interface to Account model
 func transformAccount(in interface{}) models.Account {
 	var account models.Account
 	switch v := in.(type) {
@@ -37,7 +38,6 @@ func transformAccount(in interface{}) models.Account {
 			id := (v["recruit_id"]).(*bson.ObjectId)
 			account.RecruitID = id
 		}
-
 	case models.Account:
 		account = v
 	}
@@ -45,6 +45,7 @@ func transformAccount(in interface{}) models.Account {
 	return account
 }
 
+// transform  interface into TokenManager model
 func transformTokenManager(in interface{}) models.TokenManager {
 	var tokenMgr models.TokenManager
 	switch v := in.(type) {
@@ -59,4 +60,18 @@ func transformTokenManager(in interface{}) models.TokenManager {
 	}
 
 	return tokenMgr
+}
+
+// transform interface into Recruit model
+func transformRecruit(in interface{}) models.Recruit {
+	var recruit models.Recruit
+	switch v := in.(type) {
+	case bson.M:
+		mapstructure.Decode(v, &recruit)
+		recruit.ID = v["_id"].(bson.ObjectId)
+	case models.Recruit:
+		recruit = v
+	}
+
+	return recruit
 }
