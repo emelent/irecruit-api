@@ -118,6 +118,5 @@ func TestCreateRecruitInvalid(t *testing.T) {
 		}
 
 		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
-		assert.NotContains(response, "data", fmt.Sprintf("Case [%v]: %s", i+1, msgUnexpectedData))
 	}
 }
