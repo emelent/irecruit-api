@@ -14,7 +14,7 @@ var RecruitSchema = Schema{
 			phone: String!
 			name: String!
 			email: String!
-			# dob: Date
+			# age
 			province: String!
 			city: String!
 			gender: String!
@@ -32,10 +32,13 @@ var RecruitSchema = Schema{
 			disability: String
 			vid1_url: String
 			vid2_url: String
-			qa1_question: String
-			qa1_answer: String
-			qa2_question: String
-			qa2_answer: String
+			phone: String
+			email: String
+			#dob: Date
+			#qa1_question: String
+			#qa1_answer: String
+			#qa2_question: String
+			#qa2_answer: String
 		}
 
 		enum Province{
