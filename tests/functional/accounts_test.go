@@ -175,6 +175,7 @@ func TestCreateAccountInvalid(t *testing.T) {
 		}
 	`
 
+	// invalid inputs
 	input := []string{
 		`
 			# case 1 missing field, (email)

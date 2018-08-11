@@ -44,13 +44,16 @@ type CK string
 const UaKey = CK("user_agent")
 
 //IPKey is asdf
-const IPKey = CK("ip_address")
+// const IPKey = CK("ip_address")
 
 // ReqInfoMiddleware puts some request info into the context
 func ReqInfoMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), UaKey, r.Header.Get("User-Agent"))
-		ctx = context.WithValue(ctx, IPKey, r.RemoteAddr)
+		// TODO  add ip for logging purposes
+		// ctx = context.WithValue(ctx, IPKey, r.RemoteAddr)
+		// fmt.Println("x-forwarded-for:", r.Header.Get("X-Forwarded-For"))
+		// fmt.Println("remote address:", r.RemoteAddr)
 		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})
