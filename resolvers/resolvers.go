@@ -69,3 +69,16 @@ func transformRecruit(in interface{}) models.Recruit {
 
 	return recruit
 }
+
+// transform interface into Industry model
+func transformIndustry(in interface{}) models.Industry {
+	var industry models.Industry
+	switch v := in.(type) {
+	case bson.M:
+		mapstructure.Decode(v, &industry)
+	case models.Industry:
+		industry = v
+	}
+
+	return industry
+}
