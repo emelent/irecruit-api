@@ -109,3 +109,11 @@ var Accounts = []models.Account{
 		AccessLevel: 9, // system admin
 	},
 }
+
+// Industries 4 industries
+var Industries = []models.Industry{
+	{ID: bson.NewObjectId(), Name: "Statistics"},
+	{ID: bson.NewObjectId(), Name: "Architecture"},
+	{ID: bson.NewObjectId(), Name: "Software"},
+	{ID: bson.NewObjectId(), Name: "Design"},
+}

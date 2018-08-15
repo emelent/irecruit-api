@@ -16,7 +16,7 @@ func NewLoadedCRUD() *db.CRUD {
 	LoadAccounts(crud)
 	LoadTokenManagers(crud)
 	LoadRecruits(crud)
-
+	LoadIndustries(crud)
 	return crud
 }
 
@@ -76,5 +76,17 @@ func LoadRecruits(crud *db.CRUD) {
 			break
 		}
 		crud.Insert(config.RecruitsCollection, rec)
+	}
+}
+
+// LoadIndustries loads mock industries
+func LoadIndustries(crud *db.CRUD) {
+	for i, industry := range Industries {
+		// validate before insertion
+		if err := industry.OK(); err != nil {
+			fmt.Printf("Mock industries[%v] : %s", i, err.Error())
+			break
+		}
+		crud.Insert(config.IndustriesCollection, industry)
 	}
 }
