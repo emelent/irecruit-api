@@ -14,4 +14,5 @@ const (
 	AccountsCollection      = "accounts"
 	TokenManagersCollection = "token_managers"
 	RecruitsCollection      = "recruits"
+	IndustriesCollection    = "industries"
 )
