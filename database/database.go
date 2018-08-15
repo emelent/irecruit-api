@@ -37,6 +37,12 @@ var collectionIndexes = map[string][]mgo.Index{
 			Unique: true,
 		},
 	},
+	"industries":[]mgo.Index{
+		{
+			Key: []string{"name"},
+			Unique: true,
+		},
+	}
 }
 
 func ensureIndexes(session *mgo.Session) {
