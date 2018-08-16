@@ -40,3 +40,8 @@ func (r *RootResolver) Industries() ([]*industryResolver, error) {
 	}
 	return results, err
 }
+
+// CreateIndustry resolves "createIndustry"  gql mutation
+func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryResolver, error) {
+	return nil, nil
+}
