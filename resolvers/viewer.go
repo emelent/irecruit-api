@@ -44,27 +44,15 @@ func (r *rViewerResolver) Email() string {
 func (r *rViewerResolver) Profile() (*recruitResolver, error) {
 	defer r.crud.CloseCopy()
 
-	id := string(r.r.ID)
-	if !bson.IsObjectIdHex(id) {
-		log.Println("Invalid id!")
-		return nil, er.NewGenericError()
-	}
-
-	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(id))
+	// retrieve account
+	rawAccount, err := r.crud.FindID(config.AccountsCollection, r.r.ID)
 	if err != nil {
 		log.Println(err)
 		return nil, er.NewGenericError()
 	}
 	account := transformAccount(rawAccount)
 
-	rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
-	if err != nil {
-		log.Println(err)
-		return nil, er.NewGenericError()
-	}
-
-	recruit := transformRecruit(rawRecruit)
-	return &recruitResolver{&recruit, &account}, nil
+	return &recruitResolver{r.r, &account}, nil
 }
 
 // type hViewerResolver struct {
@@ -137,6 +125,7 @@ func (r *sViewerResolver) Email() string {
 func (r *sViewerResolver) Accounts() ([]*accountResolver, error) {
 	defer r.crud.CloseCopy()
 
+	// fetch all accounts
 	rawAccounts, err := r.crud.FindAll(accountsCollection, nil)
 	results := make([]*accountResolver, 0)
 	for _, r := range rawAccounts {
@@ -161,10 +150,15 @@ func (r *viewerResolver) ToSysViewer() (*sViewerResolver, bool) {
 }
 
 // View resolves "view" gql query
-func (r *RootResolver) View(args struct{ Token string }) (*viewerResolver, error) {
+func (r *RootResolver) View(args struct{ Token *string }) (*viewerResolver, error) {
 
+	// Did we get a token?
+	if args.Token == nil {
+		// TODO return a Guest ViewerResolver
+		return nil, er.NewInvalidTokenError()
+	}
 	// get token claims
-	claims, err := utils.GetTokenClaims(args.Token)
+	claims, err := utils.GetTokenClaims(*args.Token)
 	if err != nil {
 		return nil, err
 	}
