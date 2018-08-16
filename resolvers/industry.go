@@ -3,6 +3,8 @@ package resolvers
 import (
 	"log"
 
+	"gopkg.in/mgo.v2/bson"
+
 	config "../config"
 	er "../errors"
 	models "../models"
@@ -43,5 +45,28 @@ func (r *RootResolver) Industries() ([]*industryResolver, error) {
 
 // CreateIndustry resolves "createIndustry"  gql mutation
 func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryResolver, error) {
-	return nil, nil
+	defer r.crud.CloseCopy()
+
+	var industry models.Industry
+	industry.ID = bson.NewObjectId()
+	industry.Name = args.Name
+
+	// check that the name does not already exist
+	if _, err := r.crud.FindOne(config.IndustriesCollection, &bson.M{
+		"name": args.Name,
+	}); err == nil {
+		return nil, er.NewInputError("An industry by that name already exists.")
+	}
+
+	// validate industry
+	if err := industry.OK(); err != nil {
+		return nil, err
+	}
+
+	// attempt to insert
+	if err := r.crud.Insert(config.IndustriesCollection, industry); err != nil {
+		return nil, er.NewGenericError()
+	}
+
+	return &industryResolver{&industry}, nil
 }
