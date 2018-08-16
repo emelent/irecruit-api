@@ -5,6 +5,7 @@ import (
 
 	config "../config"
 	db "../database"
+	models "../models"
 	utils "../utils"
 )
 
@@ -26,6 +27,8 @@ func LoadAccounts(crud *db.CRUD) {
 	numHunters := len(HunterIDs)
 
 	for i, acc := range Accounts {
+		acc.RecruitID = models.NullObjectID
+		acc.HunterID = models.NullObjectID
 		if i < numRecruits { // first n accounts have recruit profiles
 			acc.RecruitID = Recruits[i].ID
 		} else if i < numHunters+numRecruits { // next m accounts have hunter profiles
