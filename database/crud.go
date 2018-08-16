@@ -1,7 +1,8 @@
 package database
 
 import (
-	config "../config"
+	"os"
+
 	er "../errors"
 	"github.com/fatih/structs"
 	mgo "gopkg.in/mgo.v2"
@@ -12,6 +13,8 @@ const (
 	errBadCollection = "Invalid collection name."
 	errNotFound      = "Not found."
 )
+
+var dbName = os.Getenv("DB_NAME")
 
 //CRUD is a db abstraction layer used to perforom testing
 //as well as interact with the mgo
@@ -42,7 +45,7 @@ func (db *CRUD) Insert(collection string, values ...interface{}) error {
 	}
 
 	db.InitCopy()
-	err := db.CopySession.DB(config.DbName).C(collection).Insert(values...)
+	err := db.CopySession.DB(dbName).C(collection).Insert(values...)
 	return err
 }
 
@@ -61,7 +64,7 @@ func (db *CRUD) FindAll(collection string, query *bson.M) ([]interface{}, error)
 
 	db.InitCopy()
 	var results []interface{}
-	err := db.CopySession.DB(config.DbName).C(collection).Find(query).All(&results)
+	err := db.CopySession.DB(dbName).C(collection).Find(query).All(&results)
 	return results, err
 }
 
@@ -85,7 +88,7 @@ func (db *CRUD) FindOne(collection string, query *bson.M) (interface{}, error) {
 
 	db.InitCopy()
 	var result interface{}
-	err := db.CopySession.DB(config.DbName).C(collection).Find(query).One(&result)
+	err := db.CopySession.DB(dbName).C(collection).Find(query).One(&result)
 	return result, err
 }
 
@@ -109,7 +112,7 @@ func (db *CRUD) FindID(collection string, id interface{}) (interface{}, error) {
 
 	db.InitCopy()
 	var result interface{}
-	err := db.CopySession.DB(config.DbName).C(collection).FindId(id).One(&result)
+	err := db.CopySession.DB(dbName).C(collection).FindId(id).One(&result)
 	return result, err
 }
 
@@ -141,7 +144,7 @@ func (db *CRUD) UpdateID(collection string, id bson.ObjectId, updates bson.M) er
 	}
 
 	db.InitCopy()
-	return db.CopySession.DB(config.DbName).C(collection).UpdateId(id, updates)
+	return db.CopySession.DB(dbName).C(collection).UpdateId(id, updates)
 }
 
 //DeleteID deletes a db entry by id
@@ -171,7 +174,7 @@ func (db *CRUD) DeleteID(collection string, id bson.ObjectId) error {
 	}
 
 	db.InitCopy()
-	return db.CopySession.DB(config.DbName).C(collection).RemoveId(id)
+	return db.CopySession.DB(dbName).C(collection).RemoveId(id)
 }
 
 //Close closes both the copy and the original db session

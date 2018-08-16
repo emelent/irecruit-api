@@ -1,7 +1,8 @@
 package database
 
 import (
-	config "../config"
+	"os"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -37,17 +38,17 @@ var collectionIndexes = map[string][]mgo.Index{
 			Unique: true,
 		},
 	},
-	"industries":[]mgo.Index{
+	"industries": []mgo.Index{
 		{
-			Key: []string{"name"},
+			Key:    []string{"name"},
 			Unique: true,
 		},
-	}
+	},
 }
 
 func ensureIndexes(session *mgo.Session) {
 	for name, indexes := range collectionIndexes {
-		c := session.DB(config.DbName).C(name)
+		c := session.DB(os.Getenv("DB_NAME")).C(name)
 		for _, index := range indexes {
 			c.EnsureIndex(index)
 		}
