@@ -40,8 +40,9 @@ var Recruits = []models.Recruit{
 	},
 }
 
-// TokenManagers 6  token managers
+// TokenManagers 7  token managers
 var TokenManagers = []models.TokenManager{
+	{ID: bson.NewObjectId()},
 	{ID: bson.NewObjectId()},
 	{ID: bson.NewObjectId()},
 	{ID: bson.NewObjectId()},
@@ -50,7 +51,7 @@ var TokenManagers = []models.TokenManager{
 	{ID: bson.NewObjectId()},
 }
 
-// Accounts 6 user accounts
+// Accounts 7 user accounts
 var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
