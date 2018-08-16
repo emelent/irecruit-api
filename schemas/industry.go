@@ -13,6 +13,6 @@ var IndustrySchema = Schema{
 	`,
 	Mutations: `
 		createIndustry(name:String!):Industry
-		#removeIndustry(id:ID!)
+		removeIndustry(id:ID!):String
 	`,
 }

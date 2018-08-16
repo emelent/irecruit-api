@@ -70,3 +70,9 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryReso
 
 	return &industryResolver{&industry}, nil
 }
+
+// RemoveIndustry resolves "removeIndustry" mutation
+func (r *RootResolver) RemoveIndustry(args struct{ ID graphql.ID }) (*string, error) {
+	defer r.crud.CloseCopy()
+	return nil, nil
+}
