@@ -63,7 +63,7 @@ func TestCreateIndustryValid(t *testing.T) {
 	}
 
 	dataPortion, dOk := response["data"].(map[string]interface{})
-	resultIndusty, rOk := dataPortion[method].(map[string]string)
+	resultIndusty, rOk := dataPortion[method].(map[string]interface{})
 
 	//make assertions
 	assert.NotContains(response, "errors", msgUnexpectedError)
@@ -102,6 +102,9 @@ func TestCreateIndustryInvalid(t *testing.T) {
 			# case 2 invalid name
 			name: ""
 		`,
+		fmt.Sprintf(`	# case 3 duplicate name
+			name: "%s"
+		`, moc.Industries[0].Name),
 	}
 	for i, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
