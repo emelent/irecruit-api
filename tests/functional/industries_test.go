@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"gopkg.in/mgo.v2/bson"
+
 	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -106,6 +108,81 @@ func TestCreateIndustryInvalid(t *testing.T) {
 			name: "%s"
 		`, moc.Industries[0].Name),
 	}
+	for i, in := range input {
+		query := fmt.Sprintf(queryFormat, method, in)
+		// request and respond
+		response, err := gqlRequestAndRespond(handler, query, nil)
+		//process response
+		assert := assert.New(t)
+		if err != nil {
+			assert.Fail("Failed to process response:", err)
+		}
+
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
+	}
+}
+
+func TestRemoveIndustryValid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	// prepare request
+	method := "removeIndustry"
+	query := fmt.Sprintf(`
+		mutation{
+			%s(id:"%s")
+		}
+	`, method, moc.Industries[0].ID.Hex())
+
+	// request and respond
+	response, err := gqlRequestAndRespond(handler, query, nil)
+
+	//process response
+	assert := assert.New(t)
+	if err != nil {
+		assert.Fail("Failed to process response:", err)
+	}
+
+	dataPortion, dOk := response["data"].(map[string]interface{})
+	result, rOk := dataPortion[method].(string)
+
+	//make assertions
+	assert.NotContains(response, "errors", msgUnexpectedError)
+	assert.Contains(response, "data", msgInvalidResponse)
+	assert.Contains(response["data"], method, msgMissingResponseData)
+	assert.True(dOk, msgInvalidResponseType)
+	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
+
+	if rOk {
+		assert.Equal(result, "Industry successfully removed.", msgInvalidResult)
+	}
+}
+
+func TestRemoveIndustryInvalid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	// prepare request
+	method := "removeIndustry"
+	queryFormat := `
+		mutation{
+			%s(%s)
+		}
+	`
+
+	// invalid inputs
+	input := []string{
+		`
+			# case 1 no id
+		`,
+		`
+			# case 2 invalid id
+			id: "id"
+		`,
+		fmt.Sprintf(`
+			# case 3 non-existent id
+			id: "%s"
+		`, bson.NewObjectId()),
+	}
+
 	for i, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
 		// request and respond
