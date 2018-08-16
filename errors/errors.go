@@ -12,7 +12,7 @@ func (e CustomError) Error() string {
 	return e.Message
 }
 
-// NewCRUDError creates a new missing field error
+// NewCRUDError creates a new CRUD error
 func NewCRUDError(msg string) CustomError {
 	return CustomError{msg, 200}
 }
@@ -39,7 +39,7 @@ func NewInvalidCredentialsError() CustomError {
 	return CustomError{"Invalid credentials.", 004}
 }
 
-// NewInputError returns a new invalid credentials error
+// NewInputError returns a new invalid input error
 func NewInputError(msg string) CustomError {
 	return CustomError{msg, 005}
 }
