@@ -29,9 +29,10 @@ func transformAccount(in interface{}) models.Account {
 	case bson.M:
 
 		mapstructure.Decode(v, &account)
+		account.AccessLevel = v["access_level"].(int)
 		account.ID = v["_id"].(bson.ObjectId)
-		account.HunterID = (v["hunter_id"]).(bson.ObjectId)
-		account.RecruitID = (v["recruit_id"]).(bson.ObjectId)
+		account.HunterID = v["hunter_id"].(bson.ObjectId)
+		account.RecruitID = v["recruit_id"].(bson.ObjectId)
 	case models.Account:
 		account = v
 	}
