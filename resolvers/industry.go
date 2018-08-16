@@ -74,5 +74,18 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryReso
 // RemoveIndustry resolves "removeIndustry" mutation
 func (r *RootResolver) RemoveIndustry(args struct{ ID graphql.ID }) (*string, error) {
 	defer r.crud.CloseCopy()
-	return nil, nil
+
+	id := string(args.ID)
+
+	// check that the ID is valid
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.NewInvalidFieldError("id")
+	}
+
+	// attempt to remove industry
+	if err := r.crud.DeleteID(config.IndustriesCollection, bson.ObjectIdHex(id)); err != nil {
+		return nil, er.NewGenericError()
+	}
+	result := "Industry successfully removed."
+	return &result, nil
 }
