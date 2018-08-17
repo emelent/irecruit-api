@@ -25,6 +25,7 @@ func main() {
 	mockIt := flag.Bool("mock", false, "Uses mock database if true.")
 	flag.Parse()
 
+	// Setup environment
 	config.SetupEnv()
 
 	// setup crud system
@@ -34,13 +35,21 @@ func main() {
 		log.Println("Using temporary mock db.")
 		crud = moc.NewLoadedCRUD()
 	} else {
+		// create mongo url
+		url := db.CreateMongoURL(
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_PASS"),
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+		)
+		log.Println("Dialing mongodb at =>", url)
+
 		// connect to mongo
-		log.Println("Dialing mongodb ...")
-		mongoSession, err := mgo.Dial(os.Getenv("DB_HOST"))
-		crud = db.NewCRUD(mongoSession)
+		mongoSession, err := mgo.Dial(url)
 		if err != nil {
 			log.Println("Mongodb didn't pick up, falling back to temporary mock database.")
 		}
+		crud = db.NewCRUD(mongoSession)
 	}
 
 	// closes db connection if any

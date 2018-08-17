@@ -7,6 +7,19 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// CreateMongoURL creates a mongo url
+func CreateMongoURL(user, pass, host, port string) string {
+	url := host
+	if user != "" && pass != "" {
+		url = user + ":" + pass + "@" + host
+	}
+
+	if port != "" {
+		url += ":" + port
+	}
+	return "mongodb://" + url
+}
+
 //NewCRUD creates a new CRUD type
 func NewCRUD(session *mgo.Session) *CRUD {
 	if session != nil {
