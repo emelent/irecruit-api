@@ -227,3 +227,22 @@ func (r *RootResolver) CreateRecruit(args struct {
 	}
 	return &recruitResolver{&recruit, &account}, nil
 }
+
+// RemoveRecruit resolves "removeRecruit" mutation
+func (r *RootResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string, error) {
+	defer r.crud.CloseCopy()
+
+	id := string(args.ID)
+
+	// check that the ID is valid
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.NewInvalidFieldError("id")
+	}
+
+	// attempt to remove question
+	if err := r.crud.DeleteID(config.RecruitsCollection, bson.ObjectIdHex(id)); err != nil {
+		return nil, er.NewGenericError()
+	}
+	result := "Recruit successfully removed."
+	return &result, nil
+}
