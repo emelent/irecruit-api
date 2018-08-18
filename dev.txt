@@ -7,10 +7,9 @@ TODO
 	  information, and upload, and remove documents.
 
 		- create all necessary models
-			- Question
 			- Document
-			- QuestionAnswer or QA
-
+		- add dob to Recruit
+		- add update functionality to schemas
 
 	- make it usable for Hunters, secondly
 		- create models
