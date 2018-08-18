@@ -59,7 +59,7 @@ var RecruitSchema = Schema{
 	`,
 	Mutations: `
 		createRecruit(account_id: ID!, info: RecruitDetails!): Recruit
-		#removeRecruit(id: ID): String
+		removeRecruit(id: ID!): String
 
 	`,
 }
