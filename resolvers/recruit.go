@@ -1,42 +1,44 @@
 package resolvers
 
 import (
+	"fmt"
 	"log"
 
 	config "../config"
 	er "../errors"
 	models "../models"
+	utils "../utils"
 	graphql "github.com/graph-gophers/graphql-go"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type recruitDetails struct {
-	Phone      *string
-	Email      *string
-	Province   *string
-	City       *string
-	Gender     *string
-	Disability *string
-	Vid1Url    *string
-	Vid2Url    *string
-	// Qa1Question *string
-	// Qa1Answer   *string
-	// Qa2Question *string
-	// Qa2Answer   *string
+	Phone       *string
+	Email       *string
+	Province    *string
+	City        *string
+	Gender      *string
+	Disability  *string
+	Vid1Url     *string
+	Vid2Url     *string
+	Qa1Question *string
+	Qa1Answer   *string
+	Qa2Question *string
+	Qa2Answer   *string
 }
 
 // QA Resolver
-// type qaResolver struct {
-// 	qa *models.QA
-// }
+type qaResolver struct {
+	qa *models.QA
+}
 
-// func (r *qaResolver) Question() string {
-// 	return r.qa.Question
-// }
+func (r *qaResolver) Question() string {
+	return r.qa.Question
+}
 
-// func (r *qaResolver) Answer() string {
-// 	return r.qa.Answer
-// }
+func (r *qaResolver) Answer() string {
+	return r.qa.Answer
+}
 
 // Recruit Resolver
 type recruitResolver struct {
@@ -88,13 +90,13 @@ func (r *recruitResolver) Vid2Url() string {
 	return r.r.Vid2Url
 }
 
-// func (r *recruitResolver) Qa1() *qaResolver {
-// 	return &qaResolver{&r.r.Qa1}
-// }
+func (r *recruitResolver) Qa1() *qaResolver {
+	return &qaResolver{&r.r.Qa1}
+}
 
-// func (r *recruitResolver) Qa2() *qaResolver {
-// 	return &qaResolver{&r.r.Qa2}
-// }
+func (r *recruitResolver) Qa2() *qaResolver {
+	return &qaResolver{&r.r.Qa2}
+}
 
 // Recruits resolves recruits gql method
 func (r *RootResolver) Recruits() ([]*recruitResolver, error) {
@@ -142,7 +144,7 @@ func (r *RootResolver) CreateRecruit(args struct {
 
 	// check if the account has a recruit profile
 	account := transformAccount(rawAccount)
-	if account.RecruitID != "" {
+	if !utils.IsNullID(account.RecruitID) {
 		return nil, er.NewInputError("Account already has a Recruit profile.")
 	}
 
@@ -177,6 +179,18 @@ func (r *RootResolver) CreateRecruit(args struct {
 	if info.Vid2Url == nil {
 		return nil, er.NewMissingFieldError("info.vid2_url")
 	}
+	if info.Qa1Question == nil {
+		return nil, er.NewMissingFieldError("info.qa1_question")
+	}
+	if info.Qa1Answer == nil {
+		return nil, er.NewMissingFieldError("info.qa1_answer")
+	}
+	if info.Qa2Question == nil {
+		return nil, er.NewMissingFieldError("info.qa2_question")
+	}
+	if info.Qa2Answer == nil {
+		return nil, er.NewMissingFieldError("info.qa2_answer")
+	}
 
 	// create recruit profile
 	var recruit models.Recruit
@@ -189,9 +203,12 @@ func (r *RootResolver) CreateRecruit(args struct {
 	recruit.Vid2Url = *info.Vid2Url
 	recruit.Phone = *info.Phone
 	recruit.Email = *info.Email
+	recruit.Qa1 = models.QA{Question: *info.Qa1Question, Answer: *info.Qa1Answer}
+	recruit.Qa2 = models.QA{Question: *info.Qa2Question, Answer: *info.Qa2Answer}
 
 	// validate recruit profile
 	if err := recruit.OK(); err != nil {
+		fmt.Println("GOTCHA")
 		return nil, err
 	}
 
