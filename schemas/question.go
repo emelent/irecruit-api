@@ -11,7 +11,7 @@ var QuestionSchema = Schema{
 	`,
 	Queries: `
 		questions:[Question]!
-		#randomQuestions(industry_id: ID!): [Question]!
+		randomQuestions(industry_id: ID!): [Question]!
 	`,
 	Mutations: `
 		createQuestion(industry_id: ID!, question: String!): Question
