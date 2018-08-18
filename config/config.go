@@ -13,6 +13,8 @@ const (
 	TokenManagersCollection = "token_managers"
 	RecruitsCollection      = "recruits"
 	IndustriesCollection    = "industries"
+	QuestionsCollection     = "questions"
+	Document                = "documents"
 )
 
 // SetupEnv ...
