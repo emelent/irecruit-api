@@ -40,6 +40,83 @@ func TestQuestionList(t *testing.T) {
 	}
 }
 
+func TestRandomQuestionsValid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	//prepare request
+	method := "randomQuestions"
+	query := fmt.Sprintf(`
+		query{
+			%s(industry_id: "%s"){
+				id,
+				question,
+				industry_id
+			}
+		}`, method, moc.Industries[0].ID.Hex())
+
+	// request and respond
+	response, err := gqlRequestAndRespond(handler, query, nil)
+
+	//process response
+	assert := assert.New(t)
+	if err != nil {
+		assert.Fail("Failed to process response:", err)
+	}
+
+	dataPortion, dOk := response["data"].(map[string]interface{})
+	resultQuestions, rOk := dataPortion[method].([]interface{})
+
+	//make assertions
+	assert.NotContains(response, "errors", msgUnexpectedError)
+	assert.Contains(response, "data", msgInvalidResponse)
+	assert.Contains(response["data"], method, msgMissingResponseData)
+	assert.True(dOk, msgInvalidResponseType)
+	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
+	if rOk {
+		assert.Len(resultQuestions, 2, msgInvalidResultCount)
+	}
+}
+
+func TestRandomQuestionsInvalid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	// prepare request
+	method := "randomQuestions"
+	queryFormat := `
+		query{
+			%s(%s){
+				id,
+				question,
+				industry_id
+			}
+		}
+	`
+
+	// invalid inputs
+	input := []string{
+		`
+			# case 1 no industry_id
+		`,
+		`
+			# case 2 invalid industry_id
+			industry_id: "43"
+		`,
+	}
+
+	for i, in := range input {
+		query := fmt.Sprintf(queryFormat, method, in)
+		// request and respond
+		response, err := gqlRequestAndRespond(handler, query, nil)
+		//process response
+		assert := assert.New(t)
+		if err != nil {
+			assert.Fail("Failed to process response:", err)
+		}
+
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
+	}
+}
+
 func TestCreateQuestionValid(t *testing.T) {
 	handler := createLoadedGqlHandler()
 
