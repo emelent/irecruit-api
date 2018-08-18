@@ -9,8 +9,20 @@ import (
 
 // QA QuestionAnswer db model
 type QA struct {
-	QuestionID bson.ObjectId `json:"question_id" bson:"question_id"`
-	Answer     string        `json:"answer" bson:"answer"`
+	Question string `json:"question" bson:"question"`
+	Answer   string `json:"answer" bson:"answer"`
+}
+
+// OK validates QA fields
+func (q *QA) OK() error {
+	if q.Question == "" {
+		return er.NewInvalidFieldError("question")
+	}
+
+	if q.Answer == "" {
+		return er.NewInvalidFieldError("answer")
+	}
+	return nil
 }
 
 // Recruit db model
@@ -24,8 +36,8 @@ type Recruit struct {
 	Vid2Url    string        `json:"vid2_url" bson:"vid2_url"`
 	Phone      string        `json:"phone" bson:"phone"`
 	Email      string        `json:"email" bson:"email"`
-	// Qa1        QA            `json:"qa1" bson:"qa1"`
-	// Qa2        QA            `json:"qa2" bson:"qa2"`
+	Qa1        QA            `json:"qa1" bson:"qa1"`
+	Qa2        QA            `json:"qa2" bson:"qa2"`
 }
 
 //OK validates Recruit fields
@@ -46,6 +58,22 @@ func (r *Recruit) OK() error {
 	}
 	if r.Email == "" {
 		return er.NewInvalidFieldError("email")
+	}
+
+	if r.Qa1.Question == "" {
+		return er.NewInvalidFieldError("qa1.question")
+	}
+
+	if r.Qa1.Answer == "" {
+		return er.NewInvalidFieldError("qa1.answer")
+	}
+
+	if r.Qa2.Question == "" {
+		return er.NewInvalidFieldError("qa2.question")
+	}
+
+	if r.Qa2.Answer == "" {
+		return er.NewInvalidFieldError("qa2.answer")
 	}
 	return nil
 }
