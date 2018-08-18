@@ -6,6 +6,7 @@ import (
 	config "../config"
 	er "../errors"
 	models "../models"
+	utils "../utils"
 	graphql "github.com/graph-gophers/graphql-go"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -26,7 +27,7 @@ func (r *questionResolver) Question() string {
 	return r.q.Question
 }
 
-// Questions resolves "question" gql query
+// Questions resolves "questions" gql query
 func (r *RootResolver) Questions() ([]*questionResolver, error) {
 
 	results := make([]*questionResolver, 0)
@@ -93,4 +94,31 @@ func (r *RootResolver) RemoveQuestion(args struct{ ID graphql.ID }) (*string, er
 	}
 	result := "Question successfully removed."
 	return &result, nil
+}
+
+// RandomQuestions resolves "randomQuestions" gql query
+func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]*questionResolver, error) {
+
+	results := make([]*questionResolver, 0)
+
+	id := string(args.IndustryID)
+	// check that the ID is valid
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.NewInvalidFieldError("id")
+	}
+
+	// get industries
+	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, &bson.M{"industry_id": bson.ObjectIdHex(id)})
+	if err != nil {
+		log.Println(err)
+		return results, er.NewGenericError()
+	}
+
+	// process results
+	rawQuestions = utils.PickRandomN(2, rawQuestions)
+	for _, raw := range rawQuestions {
+		question := transformQuestion(raw)
+		results = append(results, &questionResolver{&question})
+	}
+	return results, err
 }
