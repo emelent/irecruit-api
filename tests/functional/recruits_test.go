@@ -129,7 +129,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`,
 		`
-			#case 2, invalid account_id
+			#case 3, invalid account_id
 			account_id: "sadf",
 			info: {
 				province: KWAZULU_NATAL,
@@ -147,7 +147,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`,
 		fmt.Sprintf(`
-			#case 3, missing province
+			#case 4, missing province
 			account_id: "%s",
 			info: {
 				city: "Durban",
@@ -164,7 +164,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
-			#case 4, missing city
+			#case 5, missing city
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
@@ -181,7 +181,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
-			#case 5, missing gender
+			#case 6, missing gender
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
@@ -198,7 +198,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
-			#case 6, missing disability
+			#case 7, missing disability
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
@@ -215,7 +215,75 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
-			#case 7, missing phone
+			#case 8, missing phone
+			account_id: "%s",
+			info: {
+				province: KWAZULU_NATAL,
+				city: "Durban",
+				gender: "male",
+				disability: "",
+				vid1_url: "http://google.com",
+				vid2_url: "http://youtube.com",
+				email: "dude@gmail.com",
+				qa1_question: "What's up?",
+				qa1_answer: "Nothing much.",
+				qa2_question: "You good though?",
+				qa2_answer: "You know it."				
+			}
+		`, account.ID.Hex()),
+		fmt.Sprintf(`
+			#case 9, missing email
+			account_id: "%s",
+			info: {
+				province: KWAZULU_NATAL,
+				city: "Durban",
+				gender: "male",
+				disability: "",
+				vid1_url: "http://google.com",
+				vid2_url: "http://youtube.com",
+				phone: "0123456789",
+				qa1_question: "What's up?",
+				qa1_answer: "Nothing much.",
+				qa2_question: "You good though?",
+				qa2_answer: "You know it."				
+			}
+		`, account.ID.Hex()),
+		fmt.Sprintf(`
+			#case 10, missing qa1_question
+			account_id: "%s",
+			info: {
+				province: KWAZULU_NATAL,
+				city: "Durban",
+				gender: "male",
+				disability: "",
+				vid1_url: "http://google.com",
+				vid2_url: "http://youtube.com",
+				phone: "0123456789",
+				email: "dude@gmail.com",
+				qa1_answer: "Nothing much.",
+				qa2_question: "You good though?",
+				qa2_answer: "You know it."				
+			}
+		`, account.ID.Hex()),
+		fmt.Sprintf(`
+			#case 11, missing qa1_answer
+			account_id: "%s",
+			info: {
+				province: KWAZULU_NATAL,
+				city: "Durban",
+				gender: "male",
+				disability: "",
+				vid1_url: "http://google.com",
+				vid2_url: "http://youtube.com",
+				phone: "0123456789",
+				email: "dude@gmail.com",
+				qa1_question: "What's up?",
+				qa2_question: "You good though?",
+				qa2_answer: "You know it."				
+			}
+		`, account.ID.Hex()),
+		fmt.Sprintf(`
+			#case 12, missing qa2_question
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
@@ -228,80 +296,11 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				email: "dude@gmail.com",
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
-				qa2_question: "You good though?",
 				qa2_answer: "You know it."				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
-			#case 8, missing email
-			account_id: "%s",
-			info: {
-				province: KWAZULU_NATAL,
-				city: "Durban",
-				gender: "male",
-				disability: "",
-				vid1_url: "http://google.com",
-				vid2_url: "http://youtube.com",
-				phone: "0123456789",
-				qa1_question: "What's up?",
-				qa1_answer: "Nothing much.",
-				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
-			}
-		`, account.ID.Hex()),
-		fmt.Sprintf(`
-			#case 9, missing qa1_question
-			account_id: "%s",
-			info: {
-				province: KWAZULU_NATAL,
-				city: "Durban",
-				gender: "male",
-				disability: "",
-				vid1_url: "http://google.com",
-				vid2_url: "http://youtube.com",
-				phone: "0123456789",
-				email: "dude@gmail.com",
-				qa1_answer: "Nothing much.",
-				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
-			}
-		`, account.ID.Hex()),
-		fmt.Sprintf(`
-			#case 10, missing qa1_answer
-			account_id: "%s",
-			info: {
-				province: KWAZULU_NATAL,
-				city: "Durban",
-				gender: "male",
-				disability: "",
-				vid1_url: "http://google.com",
-				vid2_url: "http://youtube.com",
-				phone: "0123456789",
-				email: "dude@gmail.com",
-				qa1_question: "What's up?",
-				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
-			}
-		`, account.ID.Hex()),
-		fmt.Sprintf(`
-			#case 11, missing qa2_question
-			account_id: "%s",
-			info: {
-				province: KWAZULU_NATAL,
-				city: "Durban",
-				gender: "male",
-				disability: "",
-				vid1_url: "http://google.com",
-				vid2_url: "http://youtube.com",
-				phone: "0123456789",
-				email: "dude@gmail.com",
-				qa1_question: "What's up?",
-				qa1_answer: "Nothing much.",
-				qa2_answer: "You know it."				
-			}
-		`, account.ID.Hex()),
-		fmt.Sprintf(`
-			#case 12, missing qa2_answer
+			#case 13, missing qa2_answer
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
