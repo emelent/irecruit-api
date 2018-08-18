@@ -21,8 +21,8 @@ var RecruitSchema = Schema{
 			disability: String!
 			vid1_url: String!
 			vid2_url: String!		
-			#qa1: QA!
-			#qa2: QA!
+			qa1: QA!
+			qa2: QA!
 		}
 
 		input RecruitDetails{
@@ -35,10 +35,10 @@ var RecruitSchema = Schema{
 			phone: String
 			email: String
 			#dob: Date
-			#qa1_question: String
-			#qa1_answer: String
-			#qa2_question: String
-			#qa2_answer: String
+			qa1_question: String
+			qa1_answer: String
+			qa2_question: String
+			qa2_answer: String
 		}
 
 		enum Province{
