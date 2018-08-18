@@ -6,6 +6,7 @@ import (
 
 	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func TestRecruitList(t *testing.T) {
@@ -316,6 +317,81 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa2_question: "You good though?",			
 			}
 		`, account.ID.Hex()),
+	}
+
+	for i, in := range input {
+		query := fmt.Sprintf(queryFormat, method, in)
+		// request and respond
+		response, err := gqlRequestAndRespond(handler, query, nil)
+		//process response
+		assert := assert.New(t)
+		if err != nil {
+			assert.Fail("Failed to process response:", err)
+		}
+
+		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
+	}
+}
+
+func TestRemoveRecruitValid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	// prepare request
+	method := "removeRecruit"
+	query := fmt.Sprintf(`
+		mutation{
+			%s(id:"%s")
+		}
+	`, method, moc.Recruits[0].ID.Hex())
+
+	// request and respond
+	response, err := gqlRequestAndRespond(handler, query, nil)
+
+	//process response
+	assert := assert.New(t)
+	if err != nil {
+		assert.Fail("Failed to process response:", err)
+	}
+
+	dataPortion, dOk := response["data"].(map[string]interface{})
+	result, rOk := dataPortion[method].(string)
+
+	//make assertions
+	assert.NotContains(response, "errors", msgUnexpectedError)
+	assert.Contains(response, "data", msgInvalidResponse)
+	assert.Contains(response["data"], method, msgMissingResponseData)
+	assert.True(dOk, msgInvalidResponseType)
+	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
+
+	if rOk {
+		assert.Equal(result, "Recruit successfully removed.", msgInvalidResult)
+	}
+}
+
+func TestRemoveRecruitInvalid(t *testing.T) {
+	handler := createLoadedGqlHandler()
+
+	// prepare request
+	method := "removeRecruit"
+	queryFormat := `
+		mutation{
+			%s(%s)
+		}
+	`
+
+	// invalid inputs
+	input := []string{
+		`
+			# case 1 no id
+		`,
+		`
+			# case 2 invalid id
+			id: "id"
+		`,
+		fmt.Sprintf(`
+			# case 3 non-existent id
+			id: "%s"
+		`, bson.NewObjectId()),
 	}
 
 	for i, in := range input {
