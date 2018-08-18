@@ -18,6 +18,7 @@ func NewLoadedCRUD() *db.CRUD {
 	LoadTokenManagers(crud)
 	LoadRecruits(crud)
 	LoadIndustries(crud)
+	LoadQuestions(crud)
 	return crud
 }
 
@@ -91,5 +92,20 @@ func LoadIndustries(crud *db.CRUD) {
 			break
 		}
 		crud.Insert(config.IndustriesCollection, industry)
+	}
+}
+
+// LoadQuestions load mock questions
+func LoadQuestions(crud *db.CRUD) {
+	var questionsPerIndustry = len(Questions) / len(Industries)
+	for i, q := range Questions {
+		q.IndustryID = Industries[i%questionsPerIndustry].ID
+		// validate before insertion
+		if err := q.OK(); err != nil {
+			fmt.Printf("Mock questions[%v] : %s", i, err.Error())
+			break
+		}
+
+		crud.Insert(config.QuestionsCollection, q)
 	}
 }
