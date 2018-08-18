@@ -97,9 +97,9 @@ func LoadIndustries(crud *db.CRUD) {
 
 // LoadQuestions load mock questions
 func LoadQuestions(crud *db.CRUD) {
-	var questionsPerIndustry = len(Questions) / len(Industries)
+	var numIndustries = len(Industries)
 	for i, q := range Questions {
-		q.IndustryID = Industries[i%questionsPerIndustry].ID
+		q.IndustryID = Industries[(i % numIndustries)].ID
 		// validate before insertion
 		if err := q.OK(); err != nil {
 			fmt.Printf("Mock questions[%v] : %s", i, err.Error())
