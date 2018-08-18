@@ -84,3 +84,20 @@ func transformIndustry(in interface{}) models.Industry {
 
 	return industry
 }
+
+// transform interface into Question model
+func transformQuestion(in interface{}) models.Question {
+	var question models.Question
+	switch v := in.(type) {
+	case bson.M:
+		mapstructure.Decode(v, &question)
+
+	case map[string]interface{}:
+		mapstructure.Decode(v, &question)
+
+	case models.Question:
+		question = v
+	}
+
+	return question
+}
