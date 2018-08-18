@@ -26,6 +26,8 @@ var Recruits = []models.Recruit{
 		Vid2Url:    "none",
 		Phone:      "012 345 2378",
 		Email:      "mark@gmail.com",
+		Qa1:        models.QA{Question: "What's up?", Answer: "Nothing much."},
+		Qa2:        models.QA{Question: "You good?", Answer: "You know it."},
 	},
 	{
 		ID:         bson.NewObjectId(),
@@ -37,6 +39,8 @@ var Recruits = []models.Recruit{
 		Vid2Url:    "none",
 		Phone:      "013 345 2378",
 		Email:      "johndoe@gmail.com",
+		Qa1:        models.QA{Question: "What's in there?", Answer: "I don't know."},
+		Qa2:        models.QA{Question: "Ever seen a turtle without it's shell?", Answer: "Nope."},
 	},
 }
 
