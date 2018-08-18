@@ -64,7 +64,7 @@ func main() {
 	}()
 
 	// prepare the router
-	router := route.NewGqlRouter(crud, mware.CorsMiddleware, mware.LoggerMiddleware)
+	router := route.NewRouter(crud, mware.CorsMiddleware, mware.LoggerMiddleware)
 
 	// start listening
 	port := ":" + string(os.Getenv("PORT"))

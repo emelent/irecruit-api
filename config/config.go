@@ -27,5 +27,6 @@ func SetupEnv() {
 		os.Setenv("PORT", "9999")
 		os.Setenv("DB_HOST", "localhost")
 		os.Setenv("DB_NAME", "irecruit")
+		os.Setenv("STATIC_FILE_DIR", "./files")
 	}
 }
