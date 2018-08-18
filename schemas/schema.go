@@ -25,6 +25,7 @@ var DefaultSchemas = []Schema{
 	RecruitSchema,
 	IndustrySchema,
 	ViewerSchema,
+	QuestionSchema,
 }
 
 // CreateSchema creates a schema from given Schema structs
