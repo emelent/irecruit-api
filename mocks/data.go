@@ -111,10 +111,21 @@ var Accounts = []models.Account{
 	},
 }
 
-// Industries 4 industries
+// Industries 2 industries
 var Industries = []models.Industry{
 	{ID: bson.NewObjectId(), Name: "Statistics"},
 	{ID: bson.NewObjectId(), Name: "Architecture"},
-	{ID: bson.NewObjectId(), Name: "Software"},
-	{ID: bson.NewObjectId(), Name: "Design"},
+}
+
+// Questions 5 questions
+var Questions = []models.Question{
+	// Industries[0] questions
+	{ID: bson.NewObjectId(), Question: "What's your favourite colour?"},
+	{ID: bson.NewObjectId(), Question: "What's your favourite song?"},
+	{ID: bson.NewObjectId(), Question: "What's your favourite name?"},
+
+	// Industries[1] questions
+	{ID: bson.NewObjectId(), Question: "What's your favourite letter?"},
+	{ID: bson.NewObjectId(), Question: "What's your favourite soup?"},
+	{ID: bson.NewObjectId(), Question: "What's your favourite song?"},
 }
