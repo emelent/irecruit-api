@@ -8,13 +8,15 @@ var RecruitSchema = Schema{
 			answer: String!
 		}
 
+		scalar Date
+		
 		type Recruit{
 			id: ID!
 			surname: String!
 			phone: String!
 			name: String!
 			email: String!
-			# age
+			age: Int!
 			province: String!
 			city: String!
 			gender: String!
@@ -34,7 +36,7 @@ var RecruitSchema = Schema{
 			vid2_url: String
 			phone: String
 			email: String
-			#dob: Date
+			birth_year: Int
 			qa1_question: String
 			qa1_answer: String
 			qa2_question: String
