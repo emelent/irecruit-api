@@ -14,7 +14,7 @@ const (
 	RecruitsCollection      = "recruits"
 	IndustriesCollection    = "industries"
 	QuestionsCollection     = "questions"
-	Document                = "documents"
+	DocumentsCollection     = "documents"
 )
 
 // SetupEnv ...
