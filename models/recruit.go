@@ -2,6 +2,7 @@ package models
 
 import (
 	"strings"
+	"time"
 
 	er "../errors"
 	"gopkg.in/mgo.v2/bson"
@@ -28,6 +29,7 @@ func (q *QA) OK() error {
 // Recruit db model
 type Recruit struct {
 	ID         bson.ObjectId `json:"id" bson:"_id"`
+	BirthYear  int32         `json:"birth_year" bson:"birth_year"`
 	Province   string        `json:"province" bson:"province"`
 	City       string        `json:"city" bson:"city"`
 	Gender     string        `json:"gender" bson:"gender"`
@@ -75,5 +77,10 @@ func (r *Recruit) OK() error {
 	if r.Qa2.Answer == "" {
 		return er.NewInvalidFieldError("qa2.answer")
 	}
+
+	if r.BirthYear < 1900 || r.BirthYear >= int32(time.Now().Year()) {
+		return er.NewInvalidFieldError("birth_year")
+	}
+
 	return nil
 }
