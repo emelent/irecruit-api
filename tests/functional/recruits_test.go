@@ -59,7 +59,8 @@ func TestCreateRecruitValid(t *testing.T) {
 					qa1_question: "What's up?",
 					qa1_answer: "Nothing much.",
 					qa2_question: "You good though?",
-					qa2_answer: "You know it."
+					qa2_answer: "You know it.",
+					birth_year: 1995
 				}
 			){
 				name,
@@ -125,7 +126,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995			
 			}
 		`,
 		`
@@ -143,7 +145,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`,
 		fmt.Sprintf(`
@@ -160,7 +163,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995		
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -177,7 +181,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995			
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -194,7 +199,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -211,7 +217,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995			
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -228,7 +235,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -245,7 +253,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -262,7 +271,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				email: "dude@gmail.com",
 				qa1_answer: "Nothing much.",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -279,7 +289,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				email: "dude@gmail.com",
 				qa1_question: "What's up?",
 				qa2_question: "You good though?",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -296,7 +307,8 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				email: "dude@gmail.com",
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
-				qa2_answer: "You know it."				
+				qa2_answer: "You know it.",
+				birth_year: 1995				
 			}
 		`, account.ID.Hex()),
 		fmt.Sprintf(`
@@ -313,7 +325,25 @@ func TestCreateRecruitInvalid(t *testing.T) {
 				email: "dude@gmail.com",
 				qa1_question: "What's up?",
 				qa1_answer: "Nothing much.",
-				qa2_question: "You good though?",			
+				qa2_question: "You good though?",
+				birth_year: 1995			
+			}
+		`, account.ID.Hex()),
+		fmt.Sprintf(`
+			#case 14, missing birth_year
+			account_id: "%s",
+			info: {
+				province: KWAZULU_NATAL,
+				city: "Durban",
+				gender: "male",
+				disability: "",
+				vid1_url: "http://google.com",
+				vid2_url: "http://youtube.com",
+				phone: "0123456789",
+				email: "dude@gmail.com",
+				qa1_question: "What's up?",
+				qa1_answer: "Nothing much.",
+				qa2_question: "You good though?"		
 			}
 		`, account.ID.Hex()),
 	}
