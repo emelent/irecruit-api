@@ -1,8 +1,8 @@
 package resolvers
 
 import (
-	"fmt"
 	"log"
+	"time"
 
 	config "../config"
 	er "../errors"
@@ -25,6 +25,7 @@ type recruitDetails struct {
 	Qa1Answer   *string
 	Qa2Question *string
 	Qa2Answer   *string
+	BirthYear   *int32
 }
 
 // QA Resolver
@@ -48,6 +49,11 @@ type recruitResolver struct {
 
 func (r *recruitResolver) ID() graphql.ID {
 	return graphql.ID(r.r.ID.Hex())
+}
+
+func (r *recruitResolver) Age() int32 {
+	year := int32(time.Now().Year())
+	return year - r.r.BirthYear
 }
 
 func (r *recruitResolver) Name() string {
@@ -179,6 +185,9 @@ func (r *RootResolver) CreateRecruit(args struct {
 	if info.Vid2Url == nil {
 		return nil, er.NewMissingFieldError("info.vid2_url")
 	}
+	if info.BirthYear == nil {
+		return nil, er.NewMissingFieldError("info.birth_year")
+	}
 	if info.Qa1Question == nil {
 		return nil, er.NewMissingFieldError("info.qa1_question")
 	}
@@ -203,12 +212,11 @@ func (r *RootResolver) CreateRecruit(args struct {
 	recruit.Vid2Url = *info.Vid2Url
 	recruit.Phone = *info.Phone
 	recruit.Email = *info.Email
+	recruit.BirthYear = *info.BirthYear
 	recruit.Qa1 = models.QA{Question: *info.Qa1Question, Answer: *info.Qa1Answer}
 	recruit.Qa2 = models.QA{Question: *info.Qa2Question, Answer: *info.Qa2Answer}
-
 	// validate recruit profile
 	if err := recruit.OK(); err != nil {
-		fmt.Println("GOTCHA")
 		return nil, err
 	}
 
