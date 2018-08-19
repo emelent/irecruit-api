@@ -3,15 +3,16 @@ TODO
 	- make it usable for Recruits first,
 	  with the schemas and resolvers to view and edit
 	  information, and upload, and remove documents.
-		- add dob to Recruit
 		- add update functionality to schemas
 
 
+	- Put it all in terms of the viewer schema
+	- Refactor tests
 	- Refactor predictable resolvers, note the patterns
 	- Refactor predictable tests
 	- Write transformer unit tests
 
-	- experiment with an upload system
+	- move upload stuff to separate microservice
 		- upload iframe with progress report
 		- also add csrf token
 
