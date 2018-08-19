@@ -133,3 +133,12 @@ var Questions = []models.Question{
 	{ID: bson.NewObjectId(), Question: "What's your favourite soup?"},
 	{ID: bson.NewObjectId(), Question: "What's your favourite song?"},
 }
+
+// Documents 5 documents
+var Documents = []models.Document{
+	{ID: bson.NewObjectId(), URL: "http://google.com/d_1", DocType: "QUALIFICATION", OwnerType: "RECRUIT"},
+	{ID: bson.NewObjectId(), URL: "http://google.com/d_2", DocType: "QUALIFICATION", OwnerType: "RECRUIT"},
+	{ID: bson.NewObjectId(), URL: "http://google.com/d_3", DocType: "QUALIFICATION", OwnerType: "RECRUIT"},
+	{ID: bson.NewObjectId(), URL: "http://google.com/d_4", DocType: "QUALIFICATION", OwnerType: "RECRUIT"},
+	{ID: bson.NewObjectId(), URL: "http://google.com/d_5", DocType: "QUALIFICATION", OwnerType: "RECRUIT"},
+}
