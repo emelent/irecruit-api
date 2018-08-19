@@ -1,13 +1,12 @@
 TODO
 	
 	- experiment with an upload system
+		- upload iframe with progress report
+		- also add csrf token
 
 	- make it usable for Recruits first,
 	  with the schemas and resolvers to view and edit
 	  information, and upload, and remove documents.
-
-		- create all necessary models
-			- Document
 		- add dob to Recruit
 		- add update functionality to schemas
 
@@ -19,4 +18,5 @@ TODO
 	- gonna have to test the transformers at some point
 	  which will mean exporting them
 	- we'll review the token system later on
+	- review issues such as flaky network and sturf
 	
