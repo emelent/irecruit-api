@@ -41,7 +41,6 @@ func NewGqlHandler(crud *db.CRUD) http.Handler {
 // NewUploadHandler creates an upload handler
 func NewUploadHandler() func(http.ResponseWriter, *http.Request) {
 	const maxUploadSize = 100 * 1024
-	fmt.Println(maxUploadSize)
 	const uploadPath = "./files"
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
