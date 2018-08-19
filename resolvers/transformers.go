@@ -74,6 +74,7 @@ func transformIndustry(in interface{}) models.Industry {
 	switch v := in.(type) {
 	case bson.M:
 		mapstructure.Decode(v, &industry)
+		industry.ID = v["_id"].(bson.ObjectId)
 
 	case map[string]interface{}:
 		mapstructure.Decode(v, &industry)
@@ -91,6 +92,7 @@ func transformQuestion(in interface{}) models.Question {
 	switch v := in.(type) {
 	case bson.M:
 		mapstructure.Decode(v, &question)
+		question.ID = v["_id"].(bson.ObjectId)
 
 	case map[string]interface{}:
 		mapstructure.Decode(v, &question)
@@ -100,4 +102,21 @@ func transformQuestion(in interface{}) models.Question {
 	}
 
 	return question
+}
+
+// transformDocument interface into Document model
+func transformDocument(in interface{}) models.Document {
+	var document models.Document
+	switch v := in.(type) {
+	case bson.M:
+		mapstructure.Decode(v, &document)
+		document.ID = v["_id"].(bson.ObjectId)
+	case map[string]interface{}:
+		mapstructure.Decode(v, &document)
+
+	case models.Document:
+		document = v
+	}
+
+	return document
 }
