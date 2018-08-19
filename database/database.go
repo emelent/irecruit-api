@@ -3,6 +3,7 @@ package database
 import (
 	"os"
 
+	config "../config"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -35,13 +36,13 @@ func NewCRUD(session *mgo.Session) *CRUD {
 }
 
 var collectionIndexes = map[string][]mgo.Index{
-	"accounts": []mgo.Index{
+	config.AccountsCollection: []mgo.Index{
 		{
 			Key:    []string{"email"},
 			Unique: true,
 		},
 	},
-	"token_managers": []mgo.Index{
+	config.TokenManagersCollection: []mgo.Index{
 		{
 			Key:    []string{"account_id"},
 			Unique: true,
@@ -51,9 +52,15 @@ var collectionIndexes = map[string][]mgo.Index{
 			Unique: true,
 		},
 	},
-	"industries": []mgo.Index{
+	config.IndustriesCollection: []mgo.Index{
 		{
 			Key:    []string{"name"},
+			Unique: true,
+		},
+	},
+	config.DocumentsCollection: []mgo.Index{
+		{
+			Key:    []string{"url"},
 			Unique: true,
 		},
 	},
