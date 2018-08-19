@@ -19,6 +19,7 @@ func NewLoadedCRUD() *db.CRUD {
 	LoadRecruits(crud)
 	LoadIndustries(crud)
 	LoadQuestions(crud)
+	LoadDocuments(crud)
 	return crud
 }
 
@@ -107,5 +108,20 @@ func LoadQuestions(crud *db.CRUD) {
 		}
 
 		crud.Insert(config.QuestionsCollection, q)
+	}
+}
+
+// LoadDocuments load mock documents
+func LoadDocuments(crud *db.CRUD) {
+	var numRecruits = len(Recruits)
+	for i, doc := range Documents {
+		doc.OwnerID = Recruits[i%numRecruits].ID
+		// validate before insertion
+		if err := doc.OK(); err != nil {
+			fmt.Printf("Mock documents[%v] : %s", i, err.Error())
+			break
+		}
+
+		crud.Insert(config.DocumentsCollection, doc)
 	}
 }
