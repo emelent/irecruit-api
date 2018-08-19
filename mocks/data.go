@@ -28,6 +28,7 @@ var Recruits = []models.Recruit{
 		Email:      "mark@gmail.com",
 		Qa1:        models.QA{Question: "What's up?", Answer: "Nothing much."},
 		Qa2:        models.QA{Question: "You good?", Answer: "You know it."},
+		BirthYear:  1985,
 	},
 	{
 		ID:         bson.NewObjectId(),
@@ -41,6 +42,7 @@ var Recruits = []models.Recruit{
 		Email:      "johndoe@gmail.com",
 		Qa1:        models.QA{Question: "What's in there?", Answer: "I don't know."},
 		Qa2:        models.QA{Question: "Ever seen a turtle without it's shell?", Answer: "Nope."},
+		BirthYear:  1995,
 	},
 }
 
