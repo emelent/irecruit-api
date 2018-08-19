@@ -57,14 +57,15 @@ func transformRecruit(in interface{}) models.Recruit {
 	case bson.M:
 		mapstructure.Decode(v, &recruit)
 		recruit.ID = v["_id"].(bson.ObjectId)
+		recruit.BirthYear = v["birth_year"].(int32)
 
 	case map[string]interface{}:
 		mapstructure.Decode(v, &recruit)
+		recruit.BirthYear = v["birth_year"].(int32)
 
 	case models.Recruit:
 		recruit = v
 	}
-
 	return recruit
 }
 
