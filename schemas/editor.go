@@ -16,10 +16,10 @@ var EditorSchema = Schema{
 			#createQuestion(): Question
 			#createIndustry(): Industry
 
-			#removeRecruit(id: ID!): Recruit
-			#removeAccount(id: ID!): Account
-			#removeIndustry(id: ID!): Industry
-			#removeQuestion(id: ID!): Industry
+			removeRecruit(id: ID!): String
+			#removeAccount(id: ID!): String
+			#removeIndustry(id: ID!): String
+			#removeQuestion(id: ID!): String
 
 			#updateRecruit(id: ID!): Recruit
 			#updateAccount(id: ID!): Account
