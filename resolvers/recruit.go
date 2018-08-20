@@ -12,22 +12,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type recruitDetails struct {
-	Phone       *string
-	Email       *string
-	Province    *string
-	City        *string
-	Gender      *string
-	Disability  *string
-	Vid1Url     *string
-	Vid2Url     *string
-	Qa1Question *string
-	Qa1Answer   *string
-	Qa2Question *string
-	Qa2Answer   *string
-	BirthYear   *int32
-}
-
 // QA Resolver
 type qaResolver struct {
 	qa *models.QA
