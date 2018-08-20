@@ -8,7 +8,6 @@ var AccountSchema = Schema{
 			name: String!
 			surname: String!
 			email: String!
-			#access_level: Int!
 			hunter_id: ID!
 			recruit_id: ID!
 		}	
@@ -28,11 +27,8 @@ var AccountSchema = Schema{
 
 	`,
 	Queries: `
-		# Retrieve all accounts
-		accounts: [Account]!
 	`,
 	Mutations: `
-		removeAccount(id: ID!): String
 		createAccount(info: AccountDetails!): Tokens
 	`,
 }
