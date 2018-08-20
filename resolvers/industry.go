@@ -11,45 +11,33 @@ import (
 	graphql "github.com/graph-gophers/graphql-go"
 )
 
-type industryResolver struct {
-	i *models.Industry
-}
-
-func (r *industryResolver) ID() graphql.ID {
-	return graphql.ID(r.i.ID.Hex())
-}
-
-func (r *industryResolver) Name() string {
-	return r.i.Name
-}
+// -----------------
+// Root Resolver methods
+// -----------------
 
 // Industries resolves "industries" gql query
-func (r *RootResolver) Industries() ([]*industryResolver, error) {
+func (r *RootResolver) Industries() ([]*IndustryResolver, error) {
 	defer r.crud.CloseCopy()
 
-	results := make([]*industryResolver, 0)
 	// get industries
 	rawIndustries, err := r.crud.FindAll(config.IndustriesCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return results, er.NewGenericError()
+		return nil, er.NewGenericError()
 	}
 
 	// process results
+	results := make([]*IndustryResolver, 0)
 	for _, raw := range rawIndustries {
 		industry := transformIndustry(raw)
-		results = append(results, &industryResolver{&industry})
+		results = append(results, &IndustryResolver{&industry})
 	}
 	return results, err
 }
 
 // CreateIndustry resolves "createIndustry"  gql mutation
-func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryResolver, error) {
+func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryResolver, error) {
 	defer r.crud.CloseCopy()
-
-	var industry models.Industry
-	industry.ID = bson.NewObjectId()
-	industry.Name = args.Name
 
 	// check that the name does not already exist
 	if _, err := r.crud.FindOne(config.IndustriesCollection, &bson.M{
@@ -58,34 +46,50 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*industryReso
 		return nil, er.NewInputError("An industry by that name already exists.")
 	}
 
+	// create industry
+	var industry models.Industry
+	industry.ID = bson.NewObjectId()
+	industry.Name = args.Name
+
 	// validate industry
 	if err := industry.OK(); err != nil {
 		return nil, err
 	}
 
-	// attempt to insert
+	// store industry in db
 	if err := r.crud.Insert(config.IndustriesCollection, industry); err != nil {
 		return nil, er.NewGenericError()
 	}
 
-	return &industryResolver{&industry}, nil
+	// return industry
+	return &IndustryResolver{&industry}, nil
 }
 
 // RemoveIndustry resolves "removeIndustry" mutation
 func (r *RootResolver) RemoveIndustry(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
+	return ResolveRemoveByID(
+		r.crud,
+		config.IndustriesCollection,
+		"Industry",
+		string(args.ID),
+	)
+}
 
-	id := string(args.ID)
+// -----------------
+// IndustryResolver struct
+// -----------------
 
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
-	}
+// IndustryResolver resolves Industry
+type IndustryResolver struct {
+	i *models.Industry
+}
 
-	// attempt to remove industry
-	if err := r.crud.DeleteID(config.IndustriesCollection, bson.ObjectIdHex(id)); err != nil {
-		return nil, er.NewGenericError()
-	}
-	result := "Industry successfully removed."
-	return &result, nil
+// ID resolves Industry.ID
+func (r *IndustryResolver) ID() graphql.ID {
+	return graphql.ID(r.i.ID.Hex())
+}
+
+// Name resolves Industry.Name
+func (r *IndustryResolver) Name() string {
+	return r.i.Name
 }

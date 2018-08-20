@@ -20,7 +20,7 @@ import (
 func (r *RootResolver) Edit(args struct {
 	Token   string
 	Enforce *string
-}) (*editorResolver, error) {
+}) (*EditorResolver, error) {
 
 	// Did we get a token?
 	if args.Token == "" {
@@ -69,8 +69,8 @@ func (r *RootResolver) Edit(args struct {
 
 			// return RecruitEditor
 			recruit := transformRecruit(rawRecruit)
-			editor := &recruitEditorResolver{&recruit, &account, r.crud}
-			return &editorResolver{editor}, nil
+			Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
+			return &EditorResolver{Editor}, nil
 
 		case "HUNTER": // try to enforce hunter
 			return nil, er.NewInputError("Unimplemented")
@@ -82,20 +82,20 @@ func (r *RootResolver) Edit(args struct {
 			}
 
 			// return sysEditor
-			editor := &sysEditorResolver{&account, r.crud}
-			return &editorResolver{editor}, nil
+			Editor := &SysEditorResolver{&account, r.crud}
+			return &EditorResolver{Editor}, nil
 
 		case "ACCOUNT":
 			// return accountEditor
-			return &editorResolver{&accountEditorResolver{&account, r.crud}}, nil
+			return &EditorResolver{&AccountEditorResolver{&account, r.crud}}, nil
 
 		}
 	}
 
 	// check if account is sys account
 	if utils.IsSysAccount(&account) {
-		editor := &sysEditorResolver{&account, r.crud}
-		return &editorResolver{editor}, nil
+		Editor := &SysEditorResolver{&account, r.crud}
+		return &EditorResolver{Editor}, nil
 	}
 
 	// check if account has recruit profile
@@ -106,8 +106,8 @@ func (r *RootResolver) Edit(args struct {
 			return nil, er.NewGenericError()
 		}
 		recruit := transformRecruit(rawRecruit)
-		editor := &recruitEditorResolver{&recruit, &account, r.crud}
-		return &editorResolver{editor}, nil
+		Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
+		return &EditorResolver{Editor}, nil
 	}
 
 	return nil, er.NewGenericError()
@@ -116,19 +116,22 @@ func (r *RootResolver) Edit(args struct {
 // -----------------
 // editor interface
 // -----------------
+
 type editor interface{}
 
 // -----------------
-// recruitEditorResolver struct
+// RecruitEditorResolver struct
 // -----------------
-type recruitEditorResolver struct {
+
+// RecruitEditorResolver resolves RecruitEditor
+type RecruitEditorResolver struct {
 	r    *models.Recruit
 	a    *models.Account
 	crud *db.CRUD
 }
 
 // RemoveRecruit resolves "removeRecruit" mutation
-func (r *recruitEditorResolver) RemoveRecruit() (*string, error) {
+func (r *RecruitEditorResolver) RemoveRecruit() (*string, error) {
 	defer r.crud.CloseCopy()
 
 	// attempt to remove Recruit
@@ -150,132 +153,79 @@ func (r *recruitEditorResolver) RemoveRecruit() (*string, error) {
 // -----------------
 // hunterEditorResolver struct
 // -----------------
+
 // type hunterEditorResolver struct {
 // 	r *models.Hunter
 // 	crud *db.CRUD
 // }
 
 // -----------------
-// sysEditorResolver struct
+// SysEditorResolver struct
 // -----------------
-type sysEditorResolver struct {
+
+// SysEditorResolver resolves SysEditor
+type SysEditorResolver struct {
 	a    *models.Account
 	crud *db.CRUD
 }
 
-func (r *sysEditorResolver) ID() graphql.ID {
+// ID resolves SysEditor.ID
+func (r *SysEditorResolver) ID() graphql.ID {
 	return graphql.ID(r.a.ID.Hex())
 }
 
-func (r *sysEditorResolver) Name() string {
+// Name resolves SysEditor.Name
+func (r *SysEditorResolver) Name() string {
 	return r.a.Name
 }
 
-func (r *sysEditorResolver) Surname() string {
+// Surname resolves SysEditor.Surname
+func (r *SysEditorResolver) Surname() string {
 	return r.a.Surname
 }
 
-func (r *sysEditorResolver) Email() string {
+// Email resolves SysEditor.Email
+func (r *SysEditorResolver) Email() string {
 	return r.a.Email
 }
 
-func (r *sysEditorResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
+// RemoveRecruit resolves SysEditor.RemoveRecruit which removes a Recruit with the given ID
+func (r *SysEditorResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string, error) {
+	return ResolveRemoveByID(
+		r.crud,
+		config.RecruitsCollection,
+		"Recruit",
+		string(args.ID),
+	)
+}
 
+// RemoveAccount resolves SysEditor.RemoveAccount which removes an Account with the given ID
+func (r *SysEditorResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
 	id := string(args.ID)
-
-	// check that the ID is valid
 	if !bson.IsObjectIdHex(id) {
 		return nil, er.NewInvalidFieldError("id")
 	}
 
-	// attempt to remove question
-	if err := r.crud.DeleteID(config.RecruitsCollection, bson.ObjectIdHex(id)); err != nil {
-		return nil, er.NewGenericError()
-	}
-	result := "Recruit successfully removed."
-	return &result, nil
-}
-
-func (r *sysEditorResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
-
-	genericErr := "Failed to remove account."
-	idStr := string(args.ID)
-	if !bson.IsObjectIdHex(idStr) {
-		return nil, er.NewInternalError(genericErr)
-	}
-	id := bson.ObjectIdHex(idStr)
-
-	// check if there's an account with that id
-	_, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"_id": id})
-	if err != nil {
-		return nil, er.NewInternalError(genericErr)
-	}
-
-	// delete the account
-	err = r.crud.DeleteID(config.AccountsCollection, id)
-	if err != nil {
-		log.Println("Failed to delete Account =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// find the account's token manager
-	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
-	if err != nil {
-		log.Println("Failed to find TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// delete the account's token manager
-	tokenMgr := transformTokenManager(rawTokenMgr)
-	err = r.crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
-	if err != nil {
-		log.Println("Failed to delete TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	msg := "Account successfully removed."
-	return &msg, nil
+	return ResolveRemoveAccount(r.crud, bson.ObjectIdHex(id))
 }
 
 // -----------------
-// accountEditorResolver struct
+// AccountEditorResolver struct
 // -----------------
-type accountEditorResolver struct {
+
+// AccountEditorResolver resolves AccountEditor
+type AccountEditorResolver struct {
 	a    *models.Account
 	crud *db.CRUD
 }
 
-func (r *accountEditorResolver) RemoveAccount() (*string, error) {
-	defer r.crud.CloseCopy()
-
-	// delete the account
-	err := r.crud.DeleteID(config.AccountsCollection, r.a.ID)
-	if err != nil {
-		log.Println("Failed to delete Account =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// find the account's token manager
-	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": r.a.ID})
-	if err != nil {
-		log.Println("Failed to find TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// delete the account's token manager
-	tokenMgr := transformTokenManager(rawTokenMgr)
-	err = r.crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
-	if err != nil {
-		log.Println("Failed to delete TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	msg := "Account successfully removed."
-	return &msg, nil
+// RemoveAccount resolves AccountEditor.RemoveAccount which removes the current account
+func (r *AccountEditorResolver) RemoveAccount() (*string, error) {
+	return ResolveRemoveAccount(r.crud, r.a.ID)
 }
-func (r *accountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails }) (*recruitResolver, error) {
+
+// CreateRecruit resolves AccountEditor.CreateRecruit which creates a Recruit profile for the current account using the given Info
+func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails }) (*RecruitResolver, error) {
 	// check if the account has a recruit profile
 	account := r.a
 	if !utils.IsNullID(account.RecruitID) {
@@ -362,28 +312,33 @@ func (r *accountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 		log.Println(err)
 		return nil, er.NewGenericError()
 	}
-	return &recruitResolver{&recruit, account}, nil
+	return &RecruitResolver{&recruit, account}, nil
 }
 
 // -----------------
-// editorResolver struct
+// EditorResolver struct
 // -----------------
-type editorResolver struct {
+
+// EditorResolver resolves Editor
+type EditorResolver struct {
 	editor
 }
 
-func (r *editorResolver) ToRecruitEditor() (*recruitEditorResolver, bool) {
-	v, ok := r.editor.(*recruitEditorResolver)
+// ToRecruitEditor asserts *EditorResolver to *RecruitEditorResolver
+func (r *EditorResolver) ToRecruitEditor() (*RecruitEditorResolver, bool) {
+	v, ok := r.editor.(*RecruitEditorResolver)
 	return v, ok
 }
 
-func (r *editorResolver) ToSysEditor() (*sysEditorResolver, bool) {
-	v, ok := r.editor.(*sysEditorResolver)
+// ToSysEditor asserts *EditorResolver to *SysEditorResolver
+func (r *EditorResolver) ToSysEditor() (*SysEditorResolver, bool) {
+	v, ok := r.editor.(*SysEditorResolver)
 	return v, ok
 }
 
-func (r *editorResolver) ToAccountEditor() (*accountEditorResolver, bool) {
-	v, ok := r.editor.(*accountEditorResolver)
+// ToAccountEditor asserts *EditorResolver to *AccountEditorResolver
+func (r *EditorResolver) ToAccountEditor() (*AccountEditorResolver, bool) {
+	v, ok := r.editor.(*AccountEditorResolver)
 	return v, ok
 }
 

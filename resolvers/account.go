@@ -18,19 +18,26 @@ import (
 // -----------------
 
 // Accounts resolves accounts(name: String) query
-func (r *RootResolver) Accounts() ([]*accountResolver, error) {
+func (r *RootResolver) Accounts() ([]*AccountResolver, error) {
 	defer r.crud.CloseCopy()
+	// get accounts
 	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
-	results := make([]*accountResolver, 0)
-	for _, r := range rawAccounts {
-		account := transformAccount(r)
-		results = append(results, &accountResolver{&account})
+	if err != nil {
+		log.Println(err)
+		return nil, er.NewGenericError()
+	}
+
+	// process results
+	results := make([]*AccountResolver, 0)
+	for _, raw := range rawAccounts {
+		account := transformAccount(raw)
+		results = append(results, &AccountResolver{&account})
 	}
 	return results, err
 }
 
 // CreateAccount resolves the query of the same name
-func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*tokensResolver, error) {
+func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*TokensResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// create account
@@ -86,55 +93,15 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 		RefreshToken: refresh,
 		MaxTokens:    5,
 	}
+
+	// store TokenManager in db
 	err = r.crud.Insert(config.TokenManagersCollection, tokenMgr)
 	if err != nil {
 		log.Println("Failed to create TokenManager", err)
 		return nil, er.NewInternalError(genericErr)
 	}
 
-	return &tokensResolver{refresh: refresh, access: access}, nil
-}
-
-// RemoveAccount removes an account
-func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
-	genericErr := "Failed to remove account."
-	idStr := string(args.ID)
-	if !bson.IsObjectIdHex(idStr) {
-		return nil, er.NewInternalError(genericErr)
-	}
-	id := bson.ObjectIdHex(idStr)
-
-	// check if there's an account with that id
-	_, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"_id": id})
-	if err != nil {
-		return nil, er.NewInternalError(genericErr)
-	}
-
-	// delete the account
-	err = r.crud.DeleteID(config.AccountsCollection, id)
-	if err != nil {
-		log.Println("Failed to delete Account =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// find the account's token manager
-	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
-	if err != nil {
-		log.Println("Failed to find TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// delete the account's token manager
-	tokenMgr := transformTokenManager(rawTokenMgr)
-	err = r.crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
-	if err != nil {
-		log.Println("Failed to delete TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	msg := "Account successfully removed."
-	return &msg, nil
+	return &TokensResolver{refresh: refresh, access: access}, nil
 }
 
 // -----------------
@@ -148,40 +115,49 @@ type accountDetails struct {
 }
 
 // -----------------
-// accountResolver struct
+// AccountResolver struct
 // -----------------
-type accountResolver struct {
+
+// AccountResolver resolves account
+type AccountResolver struct {
 	a *models.Account
 }
 
-func (r *accountResolver) ID() graphql.ID {
+// ID resolves Account.ID
+func (r *AccountResolver) ID() graphql.ID {
 	return graphql.ID(r.a.ID.Hex())
 }
 
-func (r *accountResolver) Email() string {
+// Email resolves Account.Email
+func (r *AccountResolver) Email() string {
 	return r.a.Email
 }
 
-func (r *accountResolver) Name() string {
+// Name resolves Account.Name
+func (r *AccountResolver) Name() string {
 	return r.a.Name
 }
 
-func (r *accountResolver) Surname() string {
+// Surname resolves Account.Surname
+func (r *AccountResolver) Surname() string {
 	return r.a.Surname
 }
 
-func (r *accountResolver) AccessLevel() int {
+// AccessLevel resolves Account.AccessLevel
+func (r *AccountResolver) AccessLevel() int {
 	return r.a.AccessLevel
 }
 
-func (r *accountResolver) HunterID() graphql.ID {
+// HunterID resolves Account.HunterID
+func (r *AccountResolver) HunterID() graphql.ID {
 	if r.a.HunterID == models.NullObjectID {
 		return graphql.ID("")
 	}
 	return graphql.ID(r.a.HunterID.Hex())
 }
 
-func (r *accountResolver) RecruitID() graphql.ID {
+// RecruitID resolves Account.RecruitID
+func (r *AccountResolver) RecruitID() graphql.ID {
 	if r.a.RecruitID == models.NullObjectID {
 		return graphql.ID("")
 	}
@@ -190,17 +166,21 @@ func (r *accountResolver) RecruitID() graphql.ID {
 }
 
 // -----------------
-// tokensResolver struct
+// TokensResolver struct
 // -----------------
-type tokensResolver struct {
+
+// TokensResolver resolves Tokens
+type TokensResolver struct {
 	refresh string
 	access  string
 }
 
-func (r *tokensResolver) AccessToken() string {
+// AccessToken resolves Token.AccessToken
+func (r *TokensResolver) AccessToken() string {
 	return r.access
 }
 
-func (r *tokensResolver) RefreshToken() string {
+// RefreshToken resolves Token.AccessToken
+func (r *TokensResolver) RefreshToken() string {
 	return r.refresh
 }

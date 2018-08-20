@@ -10,45 +10,25 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type documentResolver struct {
-	q *models.Document
-}
-
-func (r *documentResolver) ID() graphql.ID {
-	return graphql.ID(r.q.ID.Hex())
-}
-
-func (r *documentResolver) OwnerID() graphql.ID {
-	return graphql.ID(r.q.OwnerID.Hex())
-}
-
-func (r *documentResolver) OwnerType() string {
-	return r.q.OwnerType
-}
-
-func (r *documentResolver) URL() string {
-	return r.q.URL
-}
-
-func (r *documentResolver) DocType() string {
-	return r.q.DocType
-}
+// -----------------
+// Root Resolver methods
+// -----------------
 
 // Documents resolves "documents" gql query
-func (r *RootResolver) Documents() ([]*documentResolver, error) {
-
-	results := make([]*documentResolver, 0)
+func (r *RootResolver) Documents() ([]*DocumentResolver, error) {
+	defer r.crud.CloseCopy()
 	// get documents
 	rawDocuments, err := r.crud.FindAll(config.DocumentsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return results, er.NewGenericError()
+		return nil, er.NewGenericError()
 	}
 
 	// process results
+	results := make([]*DocumentResolver, 0)
 	for _, raw := range rawDocuments {
 		document := transformDocument(raw)
-		results = append(results, &documentResolver{&document})
+		results = append(results, &DocumentResolver{&document})
 	}
 	return results, err
 }
@@ -59,7 +39,7 @@ func (r *RootResolver) CreateDocument(args struct {
 	URL       string
 	DocType   string
 	OwnerType string
-}) (*documentResolver, error) {
+}) (*DocumentResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// check that OwnerID is valid
@@ -86,24 +66,49 @@ func (r *RootResolver) CreateDocument(args struct {
 		return nil, er.NewGenericError()
 	}
 
-	return &documentResolver{&document}, nil
+	return &DocumentResolver{&document}, nil
 }
 
 // RemoveDocument resolves "removeDocument" mutation
 func (r *RootResolver) RemoveDocument(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
+	return ResolveRemoveByID(
+		r.crud,
+		config.DocumentsCollection,
+		"Document",
+		string(args.ID),
+	)
+}
 
-	id := string(args.ID)
+// -----------------
+// DocumentResolver struct
+// -----------------
 
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
-	}
+// DocumentResolver resolves Document
+type DocumentResolver struct {
+	q *models.Document
+}
 
-	// attempt to remove document
-	if err := r.crud.DeleteID(config.DocumentsCollection, bson.ObjectIdHex(id)); err != nil {
-		return nil, er.NewGenericError()
-	}
-	result := "Document successfully removed."
-	return &result, nil
+// ID resolves Document.ID
+func (r *DocumentResolver) ID() graphql.ID {
+	return graphql.ID(r.q.ID.Hex())
+}
+
+// OwnerID resolves Document.OwnerID
+func (r *DocumentResolver) OwnerID() graphql.ID {
+	return graphql.ID(r.q.OwnerID.Hex())
+}
+
+// OwnerType resolves Document.OwnerType
+func (r *DocumentResolver) OwnerType() string {
+	return r.q.OwnerType
+}
+
+// URL resolves Document.URL
+func (r *DocumentResolver) URL() string {
+	return r.q.URL
+}
+
+// DocType resolves Document.DocType
+func (r *DocumentResolver) DocType() string {
+	return r.q.DocType
 }

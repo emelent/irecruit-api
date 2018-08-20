@@ -20,7 +20,7 @@ import (
 func (r *RootResolver) View(args struct {
 	Token   string
 	Enforce *string
-}) (*viewerResolver, error) {
+}) (*ViewerResolver, error) {
 
 	// Did we get a token?
 	if args.Token == "" {
@@ -39,11 +39,12 @@ func (r *RootResolver) View(args struct {
 		return nil, er.NewInvalidTokenError()
 	}
 
-	// get account
+	// check claims AccountID
 	if !bson.IsObjectIdHex(claims.AccountID) {
 		return nil, er.NewInvalidTokenError()
 	}
 
+	// get account
 	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(claims.AccountID))
 	if err != nil {
 		log.Println("Failed to find account by ID from token =>", err)
@@ -51,67 +52,78 @@ func (r *RootResolver) View(args struct {
 	}
 	account := transformAccount(rawAccount)
 
-	// enforce an enforceable
-	if args.Enforce != nil {
-		switch *args.Enforce {
-		case "RECRUIT": // try to enforce recruit
-
-			// check if account has recruit profile
-			if utils.IsNullID(account.RecruitID) {
-				return nil, er.NewInputError("Failed to enfore 'RECRUIT'.")
-			}
-
-			// retrieve Recruit profile
-			rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
-			if err != nil {
-				log.Println("Failed to find recruit =>", err)
-				return nil, er.NewGenericError()
-			}
-
-			// return RecruitViewer
-			recruit := transformRecruit(rawRecruit)
-			viewer := &recruitViewerResolver{&recruit, &account, r.crud}
-			return &viewerResolver{viewer}, nil
-
-		case "HUNTER": // try to enforce hunter
-			return nil, er.NewInputError("Unimplemented")
-
-		case "SYSTEM": // try to enforce system
-			// check if account is sys account
-			if !utils.IsSysAccount(&account) {
-				return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
-			}
-
-			// return sysViewer
-			viewer := &sysViewerResolver{&account, r.crud}
-			return &viewerResolver{viewer}, nil
-
-		case "ACCOUNT":
-			// return accountViewer
-			return &viewerResolver{&accountViewerResolver{&account}}, nil
-
+	// func to resolve Viewer as RecruitViewer
+	viewAsRecruit := func() (*ViewerResolver, error) {
+		// check if account has recruit profile
+		if utils.IsNullID(account.RecruitID) {
+			return nil, er.NewInputError("Failed to enfore 'RECRUIT'.")
 		}
-	}
 
-	// check if account is sys account
-	if utils.IsSysAccount(&account) {
-		viewer := &sysViewerResolver{&account, r.crud}
-		return &viewerResolver{viewer}, nil
-	}
-
-	// check if account has recruit profile
-	if !utils.IsNullID(account.RecruitID) {
+		// retrieve Recruit profile
 		rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
 		if err != nil {
 			log.Println("Failed to find recruit =>", err)
 			return nil, er.NewGenericError()
 		}
+
+		// return RecruitViewer
 		recruit := transformRecruit(rawRecruit)
-		viewer := &recruitViewerResolver{&recruit, &account, r.crud}
-		return &viewerResolver{viewer}, nil
+		viewer := &RecruitViewerResolver{&recruit, &account, r.crud}
+		return &ViewerResolver{viewer}, nil
 	}
 
-	return nil, er.NewGenericError()
+	// func to resolve Viewer as SysViewer
+	viewAsSys := func() (*ViewerResolver, error) {
+		// check if account is sys account
+		if !utils.IsSysAccount(&account) {
+			return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+		}
+
+		// return sysViewer
+		viewer := &SysViewerResolver{&account, r.crud}
+		return &ViewerResolver{viewer}, nil
+	}
+
+	//func to resolve Viewer as AccountViewer
+	viewAsAccount := func() (*ViewerResolver, error) {
+		// check if account is sys account
+		if !utils.IsSysAccount(&account) {
+			return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+		}
+
+		// return sysViewer
+		viewer := &SysViewerResolver{&account, r.crud}
+		return &ViewerResolver{viewer}, nil
+	}
+
+	// enforce a Viewer type if specified
+	if args.Enforce != nil {
+		switch *args.Enforce {
+		case "RECRUIT":
+			return viewAsRecruit()
+		case "HUNTER":
+			return nil, er.NewInputError("Unimplemented")
+		case "SYSTEM":
+			return viewAsSys()
+		case "ACCOUNT":
+			return viewAsAccount()
+		default:
+			return nil, er.NewInvalidFieldError("enforce")
+		}
+	}
+
+	// try to view as SysViewer
+	if viewer, err := viewAsSys(); err == nil {
+		return viewer, err
+	}
+
+	// try to view as RecruitViewer
+	if viewer, err := viewAsRecruit(); err == nil {
+		return viewer, err
+	}
+
+	// view as just a bare account
+	return viewAsAccount()
 }
 
 // -----------------
@@ -125,31 +137,38 @@ type viewer interface {
 }
 
 // -----------------
-// recruitViewerResolver struct
+// RecruitViewerResolver struct
 // -----------------
-type recruitViewerResolver struct {
+
+// RecruitViewerResolver resolves RecruitViewer
+type RecruitViewerResolver struct {
 	r    *models.Recruit
 	a    *models.Account
 	crud *db.CRUD
 }
 
-func (r *recruitViewerResolver) ID() graphql.ID {
+//  ID resolves RecruitViewer.ID
+func (r *RecruitViewerResolver) ID() graphql.ID {
 	return graphql.ID(r.r.ID.Hex())
 }
 
-func (r *recruitViewerResolver) Name() string {
+// Name resolves RecruitViewer.Name
+func (r *RecruitViewerResolver) Name() string {
 	return r.a.Name
 }
 
-func (r *recruitViewerResolver) Surname() string {
+// Surname resolves RecruitViewer.Surname
+func (r *RecruitViewerResolver) Surname() string {
 	return r.a.Surname
 }
 
-func (r *recruitViewerResolver) Email() string {
+// Email resolves RecruitViewer.Email
+func (r *RecruitViewerResolver) Email() string {
 	return r.a.Email
 }
 
-func (r *recruitViewerResolver) Profile() (*recruitResolver, error) {
+// Profile resolves RecruitViewer.Profile which returns the current account's Recruit profile
+func (r *RecruitViewerResolver) Profile() (*RecruitResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// retrieve account
@@ -160,7 +179,7 @@ func (r *recruitViewerResolver) Profile() (*recruitResolver, error) {
 	}
 	account := transformAccount(rawAccount)
 
-	return &recruitResolver{r.r, &account}, nil
+	return &RecruitResolver{r.r, &account}, nil
 }
 
 // -----------------
@@ -187,7 +206,7 @@ func (r *recruitViewerResolver) Profile() (*recruitResolver, error) {
 // 	return graphql.ID(r.r.Email)
 // }
 
-// func (r *hunterViewerResolver) Recruit(args struct{ID graphql.ID}) (*recruitResolver, error){
+// func (r *hunterViewerResolver) Recruit(args struct{ID graphql.ID}) (*RecruitResolver, error){
 // 	id := string(args.ID)
 // 	if !bson.IsObjectIdHex(id){
 // 		log.Println("Invalid id!")
@@ -209,99 +228,120 @@ func (r *recruitViewerResolver) Profile() (*recruitResolver, error) {
 // 		return nil, er.GenericError()
 // 	}
 // 	account :=  transformAccount(rawAccount)
-// 	return &recruitResolver{&recruit, &account}, nil
+// 	return &RecruitResolver{&recruit, &account}, nil
 // }
 
 // -----------------
-// sysViewerResolver struct
+// SysViewerResolver struct
 // -----------------
-type sysViewerResolver struct {
+
+// SysViewerResolver resolves SysViewer
+type SysViewerResolver struct {
 	a    *models.Account
 	crud *db.CRUD
 }
 
-func (r *sysViewerResolver) ID() graphql.ID {
+// ID resolves SysViewer.ID
+func (r *SysViewerResolver) ID() graphql.ID {
 	return graphql.ID(r.a.ID.Hex())
 }
 
-func (r *sysViewerResolver) Name() string {
+//Name resolves SysViewer.Name
+func (r *SysViewerResolver) Name() string {
 	return r.a.Name
 }
 
-func (r *sysViewerResolver) Surname() string {
+// Surname resolves SysViewer.Surname
+func (r *SysViewerResolver) Surname() string {
 	return r.a.Surname
 }
 
-func (r *sysViewerResolver) Email() string {
+// Email resolves SysViewer.Email
+func (r *SysViewerResolver) Email() string {
 	return r.a.Email
 }
 
-func (r *sysViewerResolver) Accounts() ([]*accountResolver, error) {
+// Accounts resolves SysViewer.Accounts which returns a list of all the accounts
+func (r *SysViewerResolver) Accounts() ([]*AccountResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// fetch all accounts
 	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
-	results := make([]*accountResolver, 0)
+	results := make([]*AccountResolver, 0)
 	for _, r := range rawAccounts {
 		account := transformAccount(r)
-		results = append(results, &accountResolver{&account})
+		results = append(results, &AccountResolver{&account})
 	}
 	return results, err
 }
 
 // -----------------
-// accountViewerResolver struct
+// AccountViewerResolver struct
 // -----------------
-type accountViewerResolver struct {
+
+// AccountViewerResolver resolves AccountViewer
+type AccountViewerResolver struct {
 	a *models.Account
 }
 
-func (r *accountViewerResolver) ID() graphql.ID {
+// ID resolves AccountViewer.ID
+func (r *AccountViewerResolver) ID() graphql.ID {
 	return graphql.ID(r.a.ID.Hex())
 }
 
-func (r *accountViewerResolver) Name() string {
+// Name resolves AccountViewer.Name
+func (r *AccountViewerResolver) Name() string {
 	return r.a.Name
 }
 
-func (r *accountViewerResolver) Surname() string {
+// Surname resolves AccountViewer.Surname
+func (r *AccountViewerResolver) Surname() string {
 	return r.a.Surname
 }
 
-func (r *accountViewerResolver) Email() string {
+// Email resolves AccountViewer.Email
+func (r *AccountViewerResolver) Email() string {
 	return r.a.Email
 }
 
-func (r *accountViewerResolver) IsHunter() bool {
+// IsHunter resolves AccountViewer.IsHunter
+func (r *AccountViewerResolver) IsHunter() bool {
 	return !utils.IsNullID(r.a.HunterID)
 }
 
-func (r *accountViewerResolver) IsRecruit() bool {
+// IsRecruit resolves AccountViewer.IsRecruit
+func (r *AccountViewerResolver) IsRecruit() bool {
 	return !utils.IsNullID(r.a.RecruitID)
 }
 
-func (r *accountViewerResolver) CheckPassword(args struct{ Password string }) bool {
+// CheckPassword resolves AccountViewer.CheckPassword
+func (r *AccountViewerResolver) CheckPassword(args struct{ Password string }) bool {
 	return r.a.CheckPassword(args.Password)
 }
 
 // -----------------
-// viewerResolver struct
+// ViewerResolver struct
 // -----------------
-type viewerResolver struct {
+
+// ViewerResolver resolves Viewer
+type ViewerResolver struct {
 	viewer
 }
 
-func (r *viewerResolver) ToRecruitViewer() (*recruitViewerResolver, bool) {
-	v, ok := r.viewer.(*recruitViewerResolver)
+// ToRecruitViewer asserts *ViewerResolver to *RecruitViewerResolver
+func (r *ViewerResolver) ToRecruitViewer() (*RecruitViewerResolver, bool) {
+	v, ok := r.viewer.(*RecruitViewerResolver)
 	return v, ok
 }
 
-func (r *viewerResolver) ToSysViewer() (*sysViewerResolver, bool) {
-	v, ok := r.viewer.(*sysViewerResolver)
+// ToSysViewer asserts *ViewerResolver to *SysViewerResolver
+func (r *ViewerResolver) ToSysViewer() (*SysViewerResolver, bool) {
+	v, ok := r.viewer.(*SysViewerResolver)
 	return v, ok
 }
 
-func (r *viewerResolver) ToAccountViewer() (*accountViewerResolver, bool) {
-	v, ok := r.viewer.(*accountViewerResolver)
+// ToAccountViewer asserts *ViewerResolver to *AccountViewerResolver
+func (r *ViewerResolver) ToAccountViewer() (*AccountViewerResolver, bool) {
+	v, ok := r.viewer.(*AccountViewerResolver)
 	return v, ok
 }

@@ -11,37 +11,26 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type questionResolver struct {
-	q *models.Question
-}
-
-func (r *questionResolver) ID() graphql.ID {
-	return graphql.ID(r.q.ID.Hex())
-}
-
-func (r *questionResolver) IndustryID() graphql.ID {
-	return graphql.ID(r.q.IndustryID.Hex())
-}
-
-func (r *questionResolver) Question() string {
-	return r.q.Question
-}
+// -----------------
+// Root Resolver methods
+// -----------------
 
 // Questions resolves "questions" gql query
-func (r *RootResolver) Questions() ([]*questionResolver, error) {
+func (r *RootResolver) Questions() ([]*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
 
-	results := make([]*questionResolver, 0)
 	// get industries
 	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return results, er.NewGenericError()
+		return nil, er.NewGenericError()
 	}
 
 	// process results
+	results := make([]*QuestionResolver, 0)
 	for _, raw := range rawQuestions {
 		question := transformQuestion(raw)
-		results = append(results, &questionResolver{&question})
+		results = append(results, &QuestionResolver{&question})
 	}
 	return results, err
 }
@@ -50,7 +39,7 @@ func (r *RootResolver) Questions() ([]*questionResolver, error) {
 func (r *RootResolver) CreateQuestion(args struct {
 	IndustryID graphql.ID
 	Question   string
-}) (*questionResolver, error) {
+}) (*QuestionResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// check that IndustryID is valid
@@ -59,6 +48,7 @@ func (r *RootResolver) CreateQuestion(args struct {
 		return nil, er.NewInvalidFieldError("industry_id")
 	}
 
+	// create question
 	var question models.Question
 	question.ID = bson.NewObjectId()
 	question.Question = args.Question
@@ -69,40 +59,31 @@ func (r *RootResolver) CreateQuestion(args struct {
 		return nil, err
 	}
 
-	// attempt to insert
+	// store question in db
 	if err := r.crud.Insert(config.QuestionsCollection, question); err != nil {
 		return nil, er.NewGenericError()
 	}
 
-	return &questionResolver{&question}, nil
+	// return question
+	return &QuestionResolver{&question}, nil
 }
 
 // RemoveQuestion resolves "removeQuestion" mutation
 func (r *RootResolver) RemoveQuestion(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
-
-	id := string(args.ID)
-
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
-	}
-
-	// attempt to remove question
-	if err := r.crud.DeleteID(config.QuestionsCollection, bson.ObjectIdHex(id)); err != nil {
-		return nil, er.NewGenericError()
-	}
-	result := "Question successfully removed."
-	return &result, nil
+	return ResolveRemoveByID(
+		r.crud,
+		config.QuestionsCollection,
+		"Question",
+		string(args.ID),
+	)
 }
 
 // RandomQuestions resolves "randomQuestions" gql query
-func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]*questionResolver, error) {
+func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
 
-	results := make([]*questionResolver, 0)
-
-	id := string(args.IndustryID)
 	// check that the ID is valid
+	id := string(args.IndustryID)
 	if !bson.IsObjectIdHex(id) {
 		return nil, er.NewInvalidFieldError("id")
 	}
@@ -111,14 +92,41 @@ func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]
 	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, &bson.M{"industry_id": bson.ObjectIdHex(id)})
 	if err != nil {
 		log.Println(err)
-		return results, er.NewGenericError()
+		return nil, er.NewGenericError()
 	}
 
 	// process results
+	randomQuestions := make([]*QuestionResolver, 0)
 	rawQuestions = utils.PickRandomN(2, rawQuestions)
 	for _, raw := range rawQuestions {
 		question := transformQuestion(raw)
-		results = append(results, &questionResolver{&question})
+		randomQuestions = append(randomQuestions, &QuestionResolver{&question})
 	}
-	return results, err
+
+	// return randomQuestions
+	return randomQuestions, err
+}
+
+// -----------------
+// QuestionResolver struct
+// -----------------
+
+// QuestionResolver resolves Question
+type QuestionResolver struct {
+	q *models.Question
+}
+
+// ID resolves Question.ID
+func (r *QuestionResolver) ID() graphql.ID {
+	return graphql.ID(r.q.ID.Hex())
+}
+
+// IndustryID resolves Question.IndustryID
+func (r *QuestionResolver) IndustryID() graphql.ID {
+	return graphql.ID(r.q.IndustryID.Hex())
+}
+
+// Question resolves Question.Question
+func (r *QuestionResolver) Question() string {
+	return r.q.Question
 }

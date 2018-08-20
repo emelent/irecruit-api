@@ -12,87 +12,15 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// QA Resolver
-type qaResolver struct {
-	qa *models.QA
-}
-
-func (r *qaResolver) Question() string {
-	return r.qa.Question
-}
-
-func (r *qaResolver) Answer() string {
-	return r.qa.Answer
-}
-
-// Recruit Resolver
-type recruitResolver struct {
-	r *models.Recruit
-	a *models.Account
-}
-
-func (r *recruitResolver) ID() graphql.ID {
-	return graphql.ID(r.r.ID.Hex())
-}
-
-func (r *recruitResolver) Age() int32 {
-	year := int32(time.Now().Year())
-	return year - r.r.BirthYear
-}
-
-func (r *recruitResolver) Name() string {
-	return r.a.Name
-}
-
-func (r *recruitResolver) Surname() string {
-	return r.a.Surname
-}
-
-func (r *recruitResolver) Phone() string {
-	return r.r.Phone
-}
-
-func (r *recruitResolver) Email() string {
-	return r.r.Email
-}
-
-func (r *recruitResolver) Province() string {
-	return r.r.Province
-}
-
-func (r *recruitResolver) City() string {
-	return r.r.City
-}
-
-func (r *recruitResolver) Gender() string {
-	return r.r.Gender
-}
-
-func (r *recruitResolver) Disability() string {
-	return r.r.Disability
-}
-
-func (r *recruitResolver) Vid1Url() string {
-	return r.r.Vid1Url
-}
-
-func (r *recruitResolver) Vid2Url() string {
-	return r.r.Vid2Url
-}
-
-func (r *recruitResolver) Qa1() *qaResolver {
-	return &qaResolver{&r.r.Qa1}
-}
-
-func (r *recruitResolver) Qa2() *qaResolver {
-	return &qaResolver{&r.r.Qa2}
-}
+// -----------------
+// Root Resolver methods
+// -----------------
 
 // Recruits resolves recruits gql method
-func (r *RootResolver) Recruits() ([]*recruitResolver, error) {
+func (r *RootResolver) Recruits() ([]*RecruitResolver, error) {
 	defer r.crud.CloseCopy()
 
-	results := make([]*recruitResolver, 0)
+	results := make([]*RecruitResolver, 0)
 	// get recruit profiles
 	rawRecruits, err := r.crud.FindAll(config.RecruitsCollection, nil)
 	if err != nil {
@@ -109,7 +37,7 @@ func (r *RootResolver) Recruits() ([]*recruitResolver, error) {
 		})
 		if e == nil {
 			account = transformAccount(rawAccount)
-			results = append(results, &recruitResolver{&recruit, &account})
+			results = append(results, &RecruitResolver{&recruit, &account})
 		}
 	}
 	return results, err
@@ -119,7 +47,7 @@ func (r *RootResolver) Recruits() ([]*recruitResolver, error) {
 func (r *RootResolver) CreateRecruit(args struct {
 	AccountID graphql.ID
 	Info      *recruitDetails
-}) (*recruitResolver, error) {
+}) (*RecruitResolver, error) {
 	// check if id is valid
 	id := string(args.AccountID)
 	if !bson.IsObjectIdHex(id) {
@@ -217,24 +145,115 @@ func (r *RootResolver) CreateRecruit(args struct {
 		log.Println(err)
 		return nil, er.NewGenericError()
 	}
-	return &recruitResolver{&recruit, &account}, nil
+	return &RecruitResolver{&recruit, &account}, nil
 }
 
 // RemoveRecruit resolves "removeRecruit" mutation
 func (r *RootResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
+	return ResolveRemoveByID(
+		r.crud,
+		config.RecruitsCollection,
+		"Recruit",
+		string(args.ID),
+	)
+}
 
-	id := string(args.ID)
+// -----------------
+// QaResolver struct
+// -----------------
 
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
-	}
+// QaResolver resolve Qa
+type QaResolver struct {
+	qa *models.QA
+}
 
-	// attempt to remove question
-	if err := r.crud.DeleteID(config.RecruitsCollection, bson.ObjectIdHex(id)); err != nil {
-		return nil, er.NewGenericError()
-	}
-	result := "Recruit successfully removed."
-	return &result, nil
+// Question resolves Qa.Question
+func (r *QaResolver) Question() string {
+	return r.qa.Question
+}
+
+// Answer resolves Qa.Answer
+func (r *QaResolver) Answer() string {
+	return r.qa.Answer
+}
+
+// -----------------
+// RecruitResolver struct
+// -----------------
+
+// RecruitResolver resolves Recruit
+type RecruitResolver struct {
+	r *models.Recruit
+	a *models.Account
+}
+
+// ID resolves Recruit.ID
+func (r *RecruitResolver) ID() graphql.ID {
+	return graphql.ID(r.r.ID.Hex())
+}
+
+// Age resolves Recruit.Age
+func (r *RecruitResolver) Age() int32 {
+	year := int32(time.Now().Year())
+	return year - r.r.BirthYear
+}
+
+// Name resolves Recruit.Name
+func (r *RecruitResolver) Name() string {
+	return r.a.Name
+}
+
+// Surname resolves Recruit.Surname
+func (r *RecruitResolver) Surname() string {
+	return r.a.Surname
+}
+
+// Phone resolves Recruit.Phone
+func (r *RecruitResolver) Phone() string {
+	return r.r.Phone
+}
+
+// Email resolves Recruit.Email
+func (r *RecruitResolver) Email() string {
+	return r.r.Email
+}
+
+// Province resolves Recruit.Province
+func (r *RecruitResolver) Province() string {
+	return r.r.Province
+}
+
+// City resolves Recruit.City
+func (r *RecruitResolver) City() string {
+	return r.r.City
+}
+
+// Gender resolves Recruit.Gender
+func (r *RecruitResolver) Gender() string {
+	return r.r.Gender
+}
+
+// Disability resolves Recruit.Disability
+func (r *RecruitResolver) Disability() string {
+	return r.r.Disability
+}
+
+// Vid1Url resolves Recruit.Vid1Url
+func (r *RecruitResolver) Vid1Url() string {
+	return r.r.Vid1Url
+}
+
+// Vid2Url resolves Recruit.Vid2Url
+func (r *RecruitResolver) Vid2Url() string {
+	return r.r.Vid2Url
+}
+
+// Qa1 resolves Recruit.Qa1
+func (r *RecruitResolver) Qa1() *QaResolver {
+	return &QaResolver{&r.r.Qa1}
+}
+
+// Qa2 resolves Recruit.Qa2
+func (r *RecruitResolver) Qa2() *QaResolver {
+	return &QaResolver{&r.r.Qa2}
 }
