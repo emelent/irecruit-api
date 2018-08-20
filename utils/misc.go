@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"log"
 	"math/rand"
 
 	models "../models"
@@ -13,8 +12,6 @@ func IsSysAccount(account *models.Account) bool {
 	if account == nil {
 		return false
 	}
-	log.Println("AccessLevel =>", account.AccessLevel)
-	log.Println("isSys =>", account.AccessLevel > 5)
 	return account.AccessLevel > 5
 }
 
