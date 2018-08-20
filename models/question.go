@@ -9,7 +9,7 @@ import (
 type Question struct {
 	ID         bson.ObjectId `json:"id" bson:"_id"`
 	IndustryID bson.ObjectId `json:"industry_id" bson:"industry_id"`
-	Question   string        `json:"name" bson:"name"`
+	Question   string        `json:"question" bson:"question"`
 }
 
 // OK validate Question model
