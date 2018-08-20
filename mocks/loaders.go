@@ -25,8 +25,8 @@ func NewLoadedCRUD() *db.CRUD {
 
 // LoadAccounts loads all account data
 func LoadAccounts(crud *db.CRUD) {
-	numRecruits := len(Recruits)
-	numHunters := len(HunterIDs)
+	numRecruits := len(Recruits) - 1
+	numHunters := len(HunterIDs) - 1
 
 	for i, acc := range Accounts {
 		acc.RecruitID = models.NullObjectID
@@ -37,6 +37,10 @@ func LoadAccounts(crud *db.CRUD) {
 			acc.HunterID = HunterIDs[i-numRecruits]
 		}
 
+		if i == len(Accounts)-1 { // i.e. the SysAccount
+			acc.HunterID = HunterIDs[numHunters]
+			acc.RecruitID = Recruits[numRecruits].ID
+		}
 		// validate before insertion
 		if err := acc.OK(); err != nil {
 			fmt.Printf("Mock accounts[%v] : %s", i, err.Error())

@@ -12,6 +12,7 @@ var HunterIDs = []bson.ObjectId{
 	bson.NewObjectId(),
 	bson.NewObjectId(),
 	bson.NewObjectId(),
+	bson.NewObjectId(), // sys admin's hunterID
 }
 
 // Recruits 2 recruit profiles
@@ -43,6 +44,20 @@ var Recruits = []models.Recruit{
 		Qa1:        models.QA{Question: "What's in there?", Answer: "I don't know."},
 		Qa2:        models.QA{Question: "Ever seen a turtle without it's shell?", Answer: "Nope."},
 		BirthYear:  1995,
+	},
+	{ // sysadmin's recruitID
+		ID:         bson.NewObjectId(),
+		Province:   "North West",
+		City:       "Mahikeng",
+		Gender:     "male",
+		Disability: "",
+		Vid1Url:    "none",
+		Vid2Url:    "none",
+		Phone:      "014 345 2378",
+		Email:      "thato@gmail.com",
+		Qa1:        models.QA{Question: "What's this?", Answer: "A dead one of these."},
+		Qa2:        models.QA{Question: "Ever seen a turtle without it's shell?", Answer: "All the time."},
+		BirthYear:  1987,
 	},
 }
 
