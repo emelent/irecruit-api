@@ -50,7 +50,7 @@ func TestCreateRecruitValid(t *testing.T) {
 				info: {
 					province: KWAZULU_NATAL,
 					city: "Durban",
-					gender: "male",
+					gender: MALE,
 					disability: "",
 					vid1_url: "http://google.com",
 					vid2_url: "http://youtube.com",
@@ -117,7 +117,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -136,7 +136,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -154,7 +154,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			account_id: "%s",
 			info: {
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -172,7 +172,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			account_id: "%s",
 			info: {
 				province: KWAZULU_NATAL,
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -209,7 +209,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
 				phone: "0123456789",
@@ -227,7 +227,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -245,7 +245,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -263,7 +263,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -281,7 +281,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -299,7 +299,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -317,7 +317,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
@@ -335,7 +335,7 @@ func TestCreateRecruitInvalid(t *testing.T) {
 			info: {
 				province: KWAZULU_NATAL,
 				city: "Durban",
-				gender: "male",
+				gender: MALE,
 				disability: "",
 				vid1_url: "http://google.com",
 				vid2_url: "http://youtube.com",
