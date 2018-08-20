@@ -147,7 +147,7 @@ type RecruitViewerResolver struct {
 	crud *db.CRUD
 }
 
-//  ID resolves RecruitViewer.ID
+// ID resolves RecruitViewer.ID
 func (r *RecruitViewerResolver) ID() graphql.ID {
 	return graphql.ID(r.r.ID.Hex())
 }
