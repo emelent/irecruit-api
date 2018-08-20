@@ -27,6 +27,7 @@ var DefaultSchemas = []Schema{
 	ViewerSchema,
 	QuestionSchema,
 	DocumentSchema,
+	EditorSchema,
 }
 
 // CreateSchema creates a schema from given Schema structs
