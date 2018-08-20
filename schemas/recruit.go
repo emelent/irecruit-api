@@ -30,7 +30,7 @@ var RecruitSchema = Schema{
 		input RecruitDetails{
 			province: Province
 			city: String
-			gender: String
+			gender: Gender
 			disability: String
 			vid1_url: String
 			vid2_url: String
@@ -53,6 +53,11 @@ var RecruitSchema = Schema{
 			MPUMALANGA
 			GAUTENG
 			LIMPOPO
+		}
+
+		enum Gender{
+			MALE
+			FEMALE
 		}
 	`,
 
