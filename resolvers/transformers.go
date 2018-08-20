@@ -2,7 +2,6 @@ package resolvers
 
 import (
 	models "../models"
-	"github.com/mitchellh/mapstructure"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -19,10 +18,6 @@ func TransformAccount(in interface{}) models.Account {
 		account.AccessLevel = v["access_level"].(int)
 		account.HunterID = v["hunter_id"].(bson.ObjectId)
 		account.RecruitID = v["recruit_id"].(bson.ObjectId)
-
-	case map[string]interface{}:
-		mapstructure.Decode(v, &account)
-
 	case models.Account:
 		account = v
 	}
@@ -41,9 +36,6 @@ func TransformTokenManager(in interface{}) models.TokenManager {
 		tokenMgr.AccountID = v["account_id"].(bson.ObjectId)
 		tokenMgr.Tokens = v["tokens"].([]string)
 
-	case map[string]interface{}:
-		mapstructure.Decode(v, &tokenMgr)
-
 	case models.TokenManager:
 		tokenMgr = v
 	}
@@ -51,18 +43,36 @@ func TransformTokenManager(in interface{}) models.TokenManager {
 	return tokenMgr
 }
 
+// TransformQA transforms interface into QA model
+func TransformQA(in interface{}) models.QA {
+	var qa models.QA
+	switch v := in.(type) {
+	case bson.M:
+		qa.Question = v["question"].(string)
+		qa.Answer = v["answer"].(string)
+	case models.QA:
+		qa = v
+	}
+	return qa
+}
+
 // TransformRecruit transforms interface into Recruit model
 func TransformRecruit(in interface{}) models.Recruit {
 	var recruit models.Recruit
 	switch v := in.(type) {
 	case bson.M:
-		mapstructure.Decode(v, &recruit)
 		recruit.ID = v["_id"].(bson.ObjectId)
 		recruit.BirthYear = v["birth_year"].(int32)
-
-	case map[string]interface{}:
-		mapstructure.Decode(v, &recruit)
-		recruit.BirthYear = v["birth_year"].(int32)
+		recruit.Province = v["province"].(string)
+		recruit.City = v["city"].(string)
+		recruit.Gender = v["gender"].(string)
+		recruit.Disability = v["disability"].(string)
+		recruit.Vid1Url = v["vid1_url"].(string)
+		recruit.Vid2Url = v["vid2_url"].(string)
+		recruit.Phone = v["phone"].(string)
+		recruit.Email = v["email"].(string)
+		recruit.Qa1 = TransformQA(v["qa1"])
+		recruit.Qa2 = TransformQA(v["qa2"])
 
 	case models.Recruit:
 		recruit = v
@@ -75,11 +85,8 @@ func TransformIndustry(in interface{}) models.Industry {
 	var industry models.Industry
 	switch v := in.(type) {
 	case bson.M:
-		mapstructure.Decode(v, &industry)
 		industry.ID = v["_id"].(bson.ObjectId)
-
-	case map[string]interface{}:
-		mapstructure.Decode(v, &industry)
+		industry.Name = v["name"].(string)
 
 	case models.Industry:
 		industry = v
@@ -93,11 +100,9 @@ func TransformQuestion(in interface{}) models.Question {
 	var question models.Question
 	switch v := in.(type) {
 	case bson.M:
-		mapstructure.Decode(v, &question)
 		question.ID = v["_id"].(bson.ObjectId)
-
-	case map[string]interface{}:
-		mapstructure.Decode(v, &question)
+		question.IndustryID = v["industry_id"].(bson.ObjectId)
+		question.Question = v["question"].(string)
 
 	case models.Question:
 		question = v
@@ -111,10 +116,11 @@ func TransformDocument(in interface{}) models.Document {
 	var document models.Document
 	switch v := in.(type) {
 	case bson.M:
-		mapstructure.Decode(v, &document)
 		document.ID = v["_id"].(bson.ObjectId)
-	case map[string]interface{}:
-		mapstructure.Decode(v, &document)
+		document.OwnerID = v["owner_id"].(bson.ObjectId)
+		document.URL = v["url"].(string)
+		document.DocType = v["doc_type"].(string)
+		document.OwnerType = v["owner_type"].(string)
 
 	case models.Document:
 		document = v
