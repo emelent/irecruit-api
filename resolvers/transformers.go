@@ -14,6 +14,7 @@ func transformAccount(in interface{}) models.Account {
 		account.ID = v["_id"].(bson.ObjectId)
 		account.Email = v["email"].(string)
 		account.Name = v["name"].(string)
+		account.Surname = v["surname"].(string)
 		account.Password = v["password"].(string)
 		account.AccessLevel = v["access_level"].(int)
 		account.HunterID = v["hunter_id"].(bson.ObjectId)
