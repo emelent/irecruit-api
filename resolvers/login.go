@@ -5,17 +5,16 @@ import (
 	"log"
 	"time"
 
+	config "../config"
 	er "../errors"
 	mware "../middleware"
 	utils "../utils"
 	"gopkg.in/mgo.v2/bson"
 )
 
-const tokenMgrCollection = "token_managers"
-
 // Login resolves graphql method of the same name
 func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password string }) (*tokensResolver, error) {
-	rawAccount, err := r.crud.FindOne(accountsCollection, &bson.M{"email": args.Email})
+	rawAccount, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"email": args.Email})
 	if err != nil {
 		return nil, er.NewInvalidCredentialsError()
 	}
@@ -25,7 +24,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		return nil, er.NewInvalidCredentialsError()
 	}
 
-	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": account.ID})
+	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": account.ID})
 	if err != nil {
 		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.NewGenericError()
@@ -52,7 +51,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 
 		// update refresh token in database
 		r.crud.UpdateID(
-			tokenMgrCollection,
+			config.TokenManagersCollection,
 			tokenMgr.ID, bson.M{"refresh_token": tokenStr},
 		)
 	}
