@@ -11,6 +11,17 @@ var ViewerSchema = Schema{
 			email: String!
 		}
 
+		type AccountViewer implements Viewer{
+			id: ID!
+			name: String!
+			surname: String!
+			email:  String!
+			is_hunter: Boolean!
+			is_recruit:  Boolean!
+			checkPassword(password: String!): Boolean!
+
+		}
+
 		type RecruitViewer implements Viewer{
 			id: ID!
 			name: String!
@@ -36,23 +47,22 @@ var ViewerSchema = Schema{
 			#recruits: [Recruit]!
 		}
 
-	#	type Guest implements Viewer{
-	#		id: ID!
-	#		name: String!
-	#		surname: String!
-	#		email: String!
-	#		industries: [Industry]!
-	#	}
+		type GuestViewer implements Viewer{
+			id: ID!
+			name: String!
+			surname: String!
+			email: String!
+		}
 
 		enum Enforce{
 			RECRUIT,
 			HUNTER,
-			SYSTEM
+			SYSTEM,
+			ACCOUNT
 		}
 	`,
 	Queries: `
 		view(token: String, enforce: Enforce):Viewer
-		#edit(token: String!, enfore: Enforce):Viewer
 	`,
 	Mutations: `
 	`,
