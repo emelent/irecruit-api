@@ -34,6 +34,5 @@ var AccountSchema = Schema{
 	Mutations: `
 		removeAccount(id: ID!): String
 		createAccount(info: AccountDetails!): Tokens
-		#updateAccount()
 	`,
 }
