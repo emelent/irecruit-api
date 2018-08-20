@@ -12,11 +12,11 @@ import (
 )
 
 func TestIndustryList(t *testing.T) {
-	handler := createLoadedGqlHandler()
 
 	//prepare request
+	handler := createLoadedGqlHandler()
 	method := "industries"
-	query := fmt.Sprintf(`query{%s{id,name}}`, method)
+	query := fmt.Sprintf(`query{%s{name}}`, method)
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
@@ -27,22 +27,25 @@ func TestIndustryList(t *testing.T) {
 		assert.Fail("Failed to process response:", err)
 	}
 
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	resultIndustries, rOk := dataPortion[method].([]interface{})
-
-	//make assertions
-	assert.NotContains(response, "errors", msgUnexpectedError)
-	assert.Contains(response, "data", msgInvalidResponse)
-	assert.Contains(response["data"], method, msgMissingResponseData)
-	assert.True(dOk, msgInvalidResponseType)
-	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-	if rOk {
-		assert.Len(resultIndustries, len(moc.Industries), msgInvalidResultCount)
+	/* expected result
+	list := make([]interface{}, 0)
+	for _, i := range moc.Industries {
+		list = append(list, map[string]interface{}{
+			"name": strings.ToLower(i.Name),
+		})
 	}
+
+	expect := map[string]interface{}{
+		"data": map[string]interface{}{
+			method: list,
+		},
+	}
+	assert.Equal(expect, response, msgInvalidResult)
 }
 
 func TestCreateIndustryValid(t *testing.T) {
 	handler := createLoadedGqlHandler()
+	assert := assert.New(t)
 
 	// prepare request
 	method := "createIndustry"
@@ -50,7 +53,6 @@ func TestCreateIndustryValid(t *testing.T) {
 	query := fmt.Sprintf(`
 		mutation{
 			%s(name: "%s"){
-				id
 				name
 			}
 		}
@@ -58,28 +60,19 @@ func TestCreateIndustryValid(t *testing.T) {
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
-
-	//process response
-	assert := assert.New(t)
 	if err != nil {
 		assert.Fail("Failed to process response:", err)
 	}
 
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	resultIndusty, rOk := dataPortion[method].(map[string]interface{})
-
-	//make assertions
-	assert.NotContains(response, "errors", msgUnexpectedError)
-	assert.Contains(response, "data", msgInvalidResponse)
-	assert.Contains(response["data"], method, msgMissingResponseData)
-	assert.True(dOk, msgInvalidResponseType)
-	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-
-	if rOk {
-		assert.Contains(resultIndusty, "id", msgMissingResponseData)
-		assert.Contains(resultIndusty, "name", msgMissingResponseData)
-		assert.Equal(strings.ToLower(name), resultIndusty["name"], msgInvalidResult)
+	// expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			method: map[string]interface{}{
+				"name": strings.ToLower(name),
+			},
+		},
 	}
+	assert.Equal(expected, response, msgInvalidResult)
 }
 
 func TestCreateIndustryInvalid(t *testing.T) {
@@ -125,6 +118,7 @@ func TestCreateIndustryInvalid(t *testing.T) {
 
 func TestRemoveIndustryValid(t *testing.T) {
 	handler := createLoadedGqlHandler()
+	assert := assert.New(t)
 
 	// prepare request
 	method := "removeIndustry"
@@ -138,24 +132,17 @@ func TestRemoveIndustryValid(t *testing.T) {
 	response, err := gqlRequestAndRespond(handler, query, nil)
 
 	//process response
-	assert := assert.New(t)
 	if err != nil {
 		assert.Fail("Failed to process response:", err)
 	}
 
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	result, rOk := dataPortion[method].(string)
-
-	//make assertions
-	assert.NotContains(response, "errors", msgUnexpectedError)
-	assert.Contains(response, "data", msgInvalidResponse)
-	assert.Contains(response["data"], method, msgMissingResponseData)
-	assert.True(dOk, msgInvalidResponseType)
-	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-
-	if rOk {
-		assert.Equal(result, "Industry successfully removed.", msgInvalidResult)
+	// expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			method: "Industry successfully removed.",
+		},
 	}
+	assert.Equal(expected, response, msgInvalidResult)
 }
 
 func TestRemoveIndustryInvalid(t *testing.T) {
