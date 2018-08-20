@@ -4,113 +4,39 @@ import (
 	"fmt"
 	"testing"
 
-	"gopkg.in/mgo.v2/bson"
-
 	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccountList(t *testing.T) {
-	//prepare handler
-	crud := moc.NewLoadedCRUD()
-	handler := createGqlHandler(crud)
+// func TestAccountList(t *testing.T) {
+// 	//prepare handler
+// 	crud := moc.NewLoadedCRUD()
+// 	handler := createGqlHandler(crud)
 
-	//prepare request
-	method := "accounts"
-	query := fmt.Sprintf(`query{%s{id,name,surname,email}}`, method)
+// 	//prepare request
+// 	method := "accounts"
+// 	query := fmt.Sprintf(`query{%s{id,name,surname,email}}`, method)
 
-	// request and respond
-	response, err := gqlRequestAndRespond(handler, query, nil)
+// 	// request and respond
+// 	response, err := gqlRequestAndRespond(handler, query, nil)
 
-	//process response
-	assert := assert.New(t)
-	if err != nil {
-		assert.Fail("Failed to process response:", err)
-	}
+// 	//process response
+// 	assert := assert.New(t)
+// 	if err != nil {
+// 		assert.Fail("Failed to process response:", err)
+// 	}
 
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	resultAccounts, rOk := dataPortion[method].([]interface{})
+// 	dataPortion, dOk := response["data"].(map[string]interface{})
+// 	resultAccounts, rOk := dataPortion[method].([]interface{})
 
-	//make assertions
-	assert.NotContains(response, "errors", msgUnexpectedError)
-	assert.Contains(response, "data", msgInvalidResponse)
-	assert.Contains(response["data"], method, msgMissingResponseData)
-	assert.True(dOk, msgInvalidResponseType)
-	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-	assert.Len(resultAccounts, len(moc.Accounts), msgInvalidResultCount)
-}
-
-func TestRemoveAccountValid(t *testing.T) {
-	//prepare handler
-	crud := moc.NewLoadedCRUD()
-	handler := createGqlHandler(crud)
-
-	//prepare request
-	method := "removeAccount"
-	query := fmt.Sprintf(`
-		mutation{
-			%s(
-				id: "%s"
-			)
-		}
-	`, method, moc.Accounts[0].ID.Hex())
-
-	// request and respond
-	response, err := gqlRequestAndRespond(handler, query, nil)
-
-	//process response
-	assert := assert.New(t)
-	if err != nil {
-		assert.Fail("Failed to process response:", err)
-	}
-
-	dataPortion, dOk := response["data"].(map[string]interface{})
-	result, rOk := dataPortion[method].(string)
-
-	//make assertions
-	assert.NotContains(response, "errors", msgUnexpectedError)
-	assert.Contains(response, "data", msgInvalidResponse)
-	assert.Contains(response["data"], method, msgMissingResponseData)
-	assert.True(dOk, msgInvalidResponseType)
-	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
-	assert.Equal(result, "Account successfully removed.", msgInvalidResult)
-}
-
-func TestRemoveAccountInvalid(t *testing.T) {
-	//prepare handler
-	crud := moc.NewLoadedCRUD()
-	handler := createGqlHandler(crud)
-
-	//prepare request
-	method := "removeAccount"
-	queryFormat := `
-		mutation{
-			%s(
-				id: "%s"
-			)
-		}
-	`
-
-	input := []string{
-		"123", // case 1
-		bson.NewObjectId().Hex(), // case 2
-	}
-	//make request
-	for i, in := range input {
-		query := fmt.Sprintf(queryFormat, method, in)
-		response, err := gqlRequestAndRespond(handler, query, nil)
-
-		//process response
-		assert := assert.New(t)
-		if err != nil {
-			assert.Fail("Failed to process response:", err)
-		}
-
-		//make assertions
-		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
-	}
-
-}
+// 	//make assertions
+// 	assert.NotContains(response, "errors", msgUnexpectedError)
+// 	assert.Contains(response, "data", msgInvalidResponse)
+// 	assert.Contains(response["data"], method, msgMissingResponseData)
+// 	assert.True(dOk, msgInvalidResponseType)
+// 	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
+// 	assert.Len(resultAccounts, len(moc.Accounts), msgInvalidResultCount)
+// }
 
 func TestCreateAccountValid(t *testing.T) {
 	//prepare handler
@@ -260,3 +186,75 @@ func TestCreateAccountInvalid(t *testing.T) {
 	}
 
 }
+
+// func TestRemoveAccountValid(t *testing.T) {
+// 	//prepare handler
+// 	crud := moc.NewLoadedCRUD()
+// 	handler := createGqlHandler(crud)
+
+// 	//prepare request
+// 	method := "removeAccount"
+// 	query := fmt.Sprintf(`
+// 		mutation{
+// 			%s(
+// 				id: "%s"
+// 			)
+// 		}
+// 	`, method, moc.Accounts[0].ID.Hex())
+
+// 	// request and respond
+// 	response, err := gqlRequestAndRespond(handler, query, nil)
+
+// 	//process response
+// 	assert := assert.New(t)
+// 	if err != nil {
+// 		assert.Fail("Failed to process response:", err)
+// 	}
+
+// 	dataPortion, dOk := response["data"].(map[string]interface{})
+// 	result, rOk := dataPortion[method].(string)
+
+// 	//make assertions
+// 	assert.NotContains(response, "errors", msgUnexpectedError)
+// 	assert.Contains(response, "data", msgInvalidResponse)
+// 	assert.Contains(response["data"], method, msgMissingResponseData)
+// 	assert.True(dOk, msgInvalidResponseType)
+// 	assert.True(rOk, fmt.Sprintf("Invalid data[\"%s\"] response type.", method))
+// 	assert.Equal(result, "Account successfully removed.", msgInvalidResult)
+// }
+
+// func TestRemoveAccountInvalid(t *testing.T) {
+// 	//prepare handler
+// 	crud := moc.NewLoadedCRUD()
+// 	handler := createGqlHandler(crud)
+
+// 	//prepare request
+// 	method := "removeAccount"
+// 	queryFormat := `
+// 		mutation{
+// 			%s(
+// 				id: "%s"
+// 			)
+// 		}
+// 	`
+
+// 	input := []string{
+// 		"123", // case 1
+// 		bson.NewObjectId().Hex(), // case 2
+// 	}
+// 	//make request
+// 	for i, in := range input {
+// 		query := fmt.Sprintf(queryFormat, method, in)
+// 		response, err := gqlRequestAndRespond(handler, query, nil)
+
+// 		//process response
+// 		assert := assert.New(t)
+// 		if err != nil {
+// 			assert.Fail("Failed to process response:", err)
+// 		}
+
+// 		//make assertions
+// 		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
+// 	}
+
+// }
