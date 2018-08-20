@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"log"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -41,7 +42,7 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryReso
 
 	// check that the name does not already exist
 	if _, err := r.crud.FindOne(config.IndustriesCollection, &bson.M{
-		"name": args.Name,
+		"name": strings.ToLower(args.Name),
 	}); err == nil {
 		return nil, er.NewInputError("An industry by that name already exists.")
 	}
