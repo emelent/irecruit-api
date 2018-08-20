@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	er "../errors"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -16,5 +18,7 @@ func (i *Industry) OK() error {
 	if i.Name == "" {
 		return er.NewInvalidFieldError("name")
 	}
+
+	i.Name = strings.ToLower(i.Name)
 	return nil
 }

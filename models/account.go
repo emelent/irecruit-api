@@ -2,6 +2,7 @@ package models
 
 import (
 	"regexp"
+	"strings"
 
 	e "../errors"
 	"golang.org/x/crypto/bcrypt"
@@ -42,6 +43,7 @@ func (a *Account) OK() error {
 		return e.NewInputError("Surname must be at least 3 alphabetic characters.")
 	}
 
+	a.Email = strings.ToLower(a.Email)
 	return nil
 }
 
