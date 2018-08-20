@@ -13,7 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// -------------------------------------------
 // Functional test general helper functions
+// -------------------------------------------
 
 // createGqlHandler creates a graphql handler
 func createGqlHandler(crud *db.CRUD) http.Handler {
@@ -51,6 +53,7 @@ func getJSONResponse(res *http.Response) (map[string]interface{}, error) {
 	return response, nil
 }
 
+// gqlRequestAndRespond query on handler and returns response
 func gqlRequestAndRespond(handler http.Handler, query string, variables *map[string]interface{}) (map[string]interface{}, error) {
 	req := createGqlRequest(query, nil)
 	w := httptest.NewRecorder()
@@ -61,6 +64,7 @@ func gqlRequestAndRespond(handler http.Handler, query string, variables *map[str
 	return response, err
 }
 
+// createLoadedGqlHandler creates a new handler with a fully loaded crud
 func createLoadedGqlHandler() http.Handler {
 	crud := moc.NewLoadedCRUD()
 	return createGqlHandler(crud)
