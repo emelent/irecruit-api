@@ -47,13 +47,6 @@ var ViewerSchema = Schema{
 			#recruits: [Recruit]!
 		}
 
-		type GuestViewer implements Viewer{
-			id: ID!
-			name: String!
-			surname: String!
-			email: String!
-		}
-
 		enum Enforce{
 			RECRUIT,
 			HUNTER,
@@ -62,7 +55,7 @@ var ViewerSchema = Schema{
 		}
 	`,
 	Queries: `
-		view(token: String, enforce: Enforce):Viewer
+		view(token: String!, enforce: Enforce):Viewer
 	`,
 	Mutations: `
 	`,

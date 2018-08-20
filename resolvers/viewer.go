@@ -18,18 +18,18 @@ import (
 
 // View resolves "view" gql query
 func (r *RootResolver) View(args struct {
-	Token   *string
+	Token   string
 	Enforce *string
 }) (*viewerResolver, error) {
 
 	// Did we get a token?
-	if args.Token == nil {
+	if args.Token == "" {
 		// return a guest viewer
-		return &viewerResolver{&guestViewerResolver{}}, nil
+		return nil, er.NewMissingFieldError("token")
 	}
 
 	// get token claims
-	claims, err := utils.GetTokenClaims(*args.Token)
+	claims, err := utils.GetTokenClaims(args.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -240,36 +240,13 @@ func (r *sysViewerResolver) Accounts() ([]*accountResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// fetch all accounts
-	rawAccounts, err := r.crud.FindAll(accountsCollection, nil)
+	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
 	results := make([]*accountResolver, 0)
 	for _, r := range rawAccounts {
 		account := transformAccount(r)
 		results = append(results, &accountResolver{&account})
 	}
 	return results, err
-}
-
-// -----------------
-// guestViewerResolver struct
-// -----------------
-type guestViewerResolver struct {
-	crud *db.CRUD
-}
-
-func (r *guestViewerResolver) ID() graphql.ID {
-	return graphql.ID("GUEST")
-}
-
-func (r *guestViewerResolver) Name() string {
-	return "Guest"
-}
-
-func (r *guestViewerResolver) Surname() string {
-	return ""
-}
-
-func (r *guestViewerResolver) Email() string {
-	return ""
 }
 
 // -----------------
@@ -296,11 +273,11 @@ func (r *accountViewerResolver) Email() string {
 }
 
 func (r *accountViewerResolver) IsHunter() bool {
-	return utils.IsNullID(r.a.HunterID)
+	return !utils.IsNullID(r.a.HunterID)
 }
 
 func (r *accountViewerResolver) IsRecruit() bool {
-	return utils.IsNullID(r.a.RecruitID)
+	return !utils.IsNullID(r.a.RecruitID)
 }
 
 func (r *accountViewerResolver) CheckPassword(args struct{ Password string }) bool {
@@ -321,11 +298,6 @@ func (r *viewerResolver) ToRecruitViewer() (*recruitViewerResolver, bool) {
 
 func (r *viewerResolver) ToSysViewer() (*sysViewerResolver, bool) {
 	v, ok := r.viewer.(*sysViewerResolver)
-	return v, ok
-}
-
-func (r *viewerResolver) ToGuestViewer() (*guestViewerResolver, bool) {
-	v, ok := r.viewer.(*guestViewerResolver)
 	return v, ok
 }
 
