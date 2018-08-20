@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	config "../config"
 	er "../errors"
 	mware "../middleware"
 	models "../models"
@@ -12,8 +13,133 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const accountsCollection = "accounts"
+// -----------------
+// Root Resolver methods
+// -----------------
 
+// Accounts resolves accounts(name: String) query
+func (r *RootResolver) Accounts() ([]*accountResolver, error) {
+	defer r.crud.CloseCopy()
+	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
+	results := make([]*accountResolver, 0)
+	for _, r := range rawAccounts {
+		account := transformAccount(r)
+		results = append(results, &accountResolver{&account})
+	}
+	return results, err
+}
+
+// CreateAccount resolves the query of the same name
+func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*tokensResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// create account
+	account := models.Account{}
+	info := args.Info
+	account.Name = info.Name
+	account.Email = info.Email
+	account.Surname = info.Surname
+	account.AccessLevel = 0
+	account.Password = info.Password
+	account.ID = bson.NewObjectId()
+	account.HunterID = models.NullObjectID
+	account.RecruitID = models.NullObjectID
+	genericErr := "Failed to create Account"
+
+	// validate account data
+	err := account.OK()
+	if err != nil {
+		return nil, err
+	}
+
+	// hash the new password
+	account.HashPassword()
+
+	// store account in db
+	err = r.crud.Insert(config.AccountsCollection, account)
+	if err != nil {
+		log.Println("Failed to create Account =>", err)
+		return nil, er.NewInternalError(genericErr)
+	}
+
+	// create refresh token
+	id := account.ID.Hex()
+	refresh, err := utils.CreateRefreshToken(id)
+	if err != nil {
+		log.Println("Failed to create refresh token =>", err)
+		return nil, er.NewGenericError()
+	}
+
+	// access token
+	ua := ctx.Value(mware.UaKey).(string)
+	access, err := utils.CreateAccessToken(id, ua)
+	if err != nil {
+		log.Println("Failed to create access token =>", err)
+		return nil, er.NewGenericError()
+	}
+
+	// create token manager
+	tokenMgr := models.TokenManager{
+		ID:           bson.NewObjectId(),
+		AccountID:    account.ID,
+		Tokens:       []string{access},
+		RefreshToken: refresh,
+		MaxTokens:    5,
+	}
+	err = r.crud.Insert(config.TokenManagersCollection, tokenMgr)
+	if err != nil {
+		log.Println("Failed to create TokenManager", err)
+		return nil, er.NewInternalError(genericErr)
+	}
+
+	return &tokensResolver{refresh: refresh, access: access}, nil
+}
+
+// RemoveAccount removes an account
+func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
+	defer r.crud.CloseCopy()
+	genericErr := "Failed to remove account."
+	idStr := string(args.ID)
+	if !bson.IsObjectIdHex(idStr) {
+		return nil, er.NewInternalError(genericErr)
+	}
+	id := bson.ObjectIdHex(idStr)
+
+	// check if there's an account with that id
+	_, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"_id": id})
+	if err != nil {
+		return nil, er.NewInternalError(genericErr)
+	}
+
+	// delete the account
+	err = r.crud.DeleteID(config.AccountsCollection, id)
+	if err != nil {
+		log.Println("Failed to delete Account =>", err)
+		return nil, er.NewGenericError()
+	}
+
+	// find the account's token manager
+	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
+	if err != nil {
+		log.Println("Failed to find TokenManager =>", err)
+		return nil, er.NewGenericError()
+	}
+
+	// delete the account's token manager
+	tokenMgr := transformTokenManager(rawTokenMgr)
+	err = r.crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
+	if err != nil {
+		log.Println("Failed to delete TokenManager =>", err)
+		return nil, er.NewGenericError()
+	}
+
+	msg := "Account successfully removed."
+	return &msg, nil
+}
+
+// -----------------
+// accountDetails struct
+// -----------------
 type accountDetails struct {
 	Email    string
 	Password string
@@ -21,6 +147,9 @@ type accountDetails struct {
 	Surname  string
 }
 
+// -----------------
+// accountResolver struct
+// -----------------
 type accountResolver struct {
 	a *models.Account
 }
@@ -60,6 +189,9 @@ func (r *accountResolver) RecruitID() graphql.ID {
 	return graphql.ID(r.a.RecruitID.Hex())
 }
 
+// -----------------
+// tokensResolver struct
+// -----------------
 type tokensResolver struct {
 	refresh string
 	access  string
@@ -71,124 +203,4 @@ func (r *tokensResolver) AccessToken() string {
 
 func (r *tokensResolver) RefreshToken() string {
 	return r.refresh
-}
-
-// Accounts resolves accounts(name: String) query
-func (r *RootResolver) Accounts() ([]*accountResolver, error) {
-	defer r.crud.CloseCopy()
-	rawAccounts, err := r.crud.FindAll(accountsCollection, nil)
-	results := make([]*accountResolver, 0)
-	for _, r := range rawAccounts {
-		account := transformAccount(r)
-		results = append(results, &accountResolver{&account})
-	}
-	return results, err
-}
-
-// CreateAccount resolves the query of the same name
-func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*tokensResolver, error) {
-	defer r.crud.CloseCopy()
-
-	// create account
-	account := models.Account{}
-	info := args.Info
-	account.Name = info.Name
-	account.Email = info.Email
-	account.Surname = info.Surname
-	account.AccessLevel = 0
-	account.Password = info.Password
-	account.ID = bson.NewObjectId()
-	account.HunterID = models.NullObjectID
-	account.RecruitID = models.NullObjectID
-	genericErr := "Failed to create Account"
-
-	// validate account data
-	err := account.OK()
-	if err != nil {
-		return nil, err
-	}
-
-	// hash the new password
-	account.HashPassword()
-
-	// store account in db
-	err = r.crud.Insert(accountsCollection, account)
-	if err != nil {
-		log.Println("Failed to create Account =>", err)
-		return nil, er.NewInternalError(genericErr)
-	}
-
-	// create refresh token
-	id := account.ID.Hex()
-	refresh, err := utils.CreateRefreshToken(id)
-	if err != nil {
-		log.Println("Failed to create refresh token =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// access token
-	ua := ctx.Value(mware.UaKey).(string)
-	access, err := utils.CreateAccessToken(id, ua)
-	if err != nil {
-		log.Println("Failed to create access token =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// create token manager
-	tokenMgr := models.TokenManager{
-		ID:           bson.NewObjectId(),
-		AccountID:    account.ID,
-		Tokens:       []string{access},
-		RefreshToken: refresh,
-		MaxTokens:    5,
-	}
-	err = r.crud.Insert(tokenMgrCollection, tokenMgr)
-	if err != nil {
-		log.Println("Failed to create TokenManager", err)
-		return nil, er.NewInternalError(genericErr)
-	}
-
-	return &tokensResolver{refresh: refresh, access: access}, nil
-}
-
-// RemoveAccount removes an account
-func (r *RootResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
-	defer r.crud.CloseCopy()
-	genericErr := "Failed to remove account."
-	idStr := string(args.ID)
-	if !bson.IsObjectIdHex(idStr) {
-		return nil, er.NewInternalError(genericErr)
-	}
-	id := bson.ObjectIdHex(idStr)
-
-	// check if there's an account with that id
-	_, err := r.crud.FindOne(accountsCollection, &bson.M{"_id": id})
-	if err != nil {
-		return nil, er.NewInternalError(genericErr)
-	}
-
-	// delete the account
-	err = r.crud.DeleteID(accountsCollection, id)
-	if err != nil {
-		log.Println("Failed to delete Account =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// find the account's token manager
-	rawTokenMgr, err := r.crud.FindOne(tokenMgrCollection, &bson.M{"account_id": id})
-	if err != nil {
-		log.Println("Failed to find TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	// delete the account's token manager
-	tokenMgr := transformTokenManager(rawTokenMgr)
-	err = r.crud.DeleteID(tokenMgrCollection, tokenMgr.ID)
-	if err != nil {
-		log.Println("Failed to delete TokenManager =>", err)
-		return nil, er.NewGenericError()
-	}
-
-	msg := "Account successfully removed."
-	return &msg, nil
 }
