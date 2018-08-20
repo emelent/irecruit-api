@@ -27,7 +27,7 @@ func TestIndustryList(t *testing.T) {
 		assert.Fail("Failed to process response:", err)
 	}
 
-	/* expected result
+	// expected result
 	list := make([]interface{}, 0)
 	for _, i := range moc.Industries {
 		list = append(list, map[string]interface{}{
