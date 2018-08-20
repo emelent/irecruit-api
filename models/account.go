@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	e "../errors"
+	er "../errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -31,16 +31,16 @@ func (a *Account) OK() error {
 	reName := regexp.MustCompile(`[a-zA-Z]{3,}`)
 	reSurname := regexp.MustCompile(`[a-zA-Z]{3,}`)
 	if !reEmail.MatchString(a.Email) {
-		return e.NewInvalidFieldError("Email")
+		return er.InvalidField("Email")
 	}
 	if !rePassword.MatchString(a.Password) {
-		return e.NewInputError("Password must be at least 6 characters long.")
+		return er.Input("Password must be at least 6 characters long.")
 	}
 	if !reName.MatchString(a.Name) {
-		return e.NewInputError("Name must be at least 3 alphabetic characters.")
+		return er.Input("Name must be at least 3 alphabetic characters.")
 	}
 	if !reSurname.MatchString(a.Surname) {
-		return e.NewInputError("Surname must be at least 3 alphabetic characters.")
+		return er.Input("Surname must be at least 3 alphabetic characters.")
 	}
 
 	a.Email = strings.ToLower(a.Email)

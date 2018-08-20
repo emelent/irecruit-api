@@ -23,20 +23,20 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	// find account by email
 	rawAccount, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"email": args.Email})
 	if err != nil {
-		return nil, er.NewInvalidCredentialsError()
+		return nil, er.InvalidCredentials()
 	}
 	account := TransformAccount(rawAccount)
 
 	// check if passwords match
 	if !account.CheckPassword(args.Password) {
-		return nil, er.NewInvalidCredentialsError()
+		return nil, er.InvalidCredentials()
 	}
 
 	// get account's tokenManager
 	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": account.ID})
 	if err != nil {
 		log.Println("Failed to find TokenManager =>", err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 	tokenMgr := TransformTokenManager(rawTokenMgr)
 
@@ -44,7 +44,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	claims, err := utils.GetTokenClaims(tokenMgr.RefreshToken)
 	if err != nil {
 		log.Println("Invalid refresh token =>", err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// prepare token creation data
@@ -58,7 +58,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		tokenStr, err := utils.CreateRefreshToken(id)
 		if err != nil {
 			log.Println("Failed to create new refresh token =>", err)
-			return nil, er.NewGenericError()
+			return nil, er.Generic()
 		}
 		// update tokenManager's refresh token
 		tokenMgr.RefreshToken = tokenStr
@@ -74,7 +74,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	access, err := utils.CreateAccessToken(id, ua)
 	if err != nil {
 		log.Println("Failed to create access token =>", err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	return &TokensResolver{refresh: tokenMgr.RefreshToken, access: access}, nil

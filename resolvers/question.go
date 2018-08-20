@@ -23,7 +23,7 @@ func (r *RootResolver) Questions() ([]*QuestionResolver, error) {
 	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// process results
@@ -45,7 +45,7 @@ func (r *RootResolver) CreateQuestion(args struct {
 	// check that IndustryID is valid
 	id := string(args.IndustryID)
 	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("industry_id")
+		return nil, er.InvalidField("industry_id")
 	}
 
 	// create question
@@ -61,7 +61,7 @@ func (r *RootResolver) CreateQuestion(args struct {
 
 	// store question in db
 	if err := r.crud.Insert(config.QuestionsCollection, question); err != nil {
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// return question
@@ -85,14 +85,14 @@ func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]
 	// check that the ID is valid
 	id := string(args.IndustryID)
 	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
+		return nil, er.InvalidField("id")
 	}
 
 	// get industries
 	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, &bson.M{"industry_id": bson.ObjectIdHex(id)})
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// process results

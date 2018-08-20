@@ -17,11 +17,11 @@ type QA struct {
 // OK validates QA fields
 func (q *QA) OK() error {
 	if q.Question == "" {
-		return er.NewInvalidFieldError("question")
+		return er.InvalidField("question")
 	}
 
 	if q.Answer == "" {
-		return er.NewInvalidFieldError("answer")
+		return er.InvalidField("answer")
 	}
 	return nil
 }
@@ -45,41 +45,41 @@ type Recruit struct {
 //OK validates Recruit fields
 func (r *Recruit) OK() error {
 	if r.Province == "" {
-		return er.NewInvalidFieldError("province")
+		return er.InvalidField("province")
 	}
 	if r.City == "" {
-		return er.NewInvalidFieldError("city")
+		return er.InvalidField("city")
 	}
 	r.Gender = strings.ToLower(r.Gender)
 	if !(r.Gender == "male" || r.Gender == "female") {
-		return er.NewInvalidFieldError("gender")
+		return er.InvalidField("gender")
 	}
 
 	if r.Phone == "" {
-		return er.NewInvalidFieldError("phone")
+		return er.InvalidField("phone")
 	}
 	if r.Email == "" {
-		return er.NewInvalidFieldError("email")
+		return er.InvalidField("email")
 	}
 
 	if r.Qa1.Question == "" {
-		return er.NewInvalidFieldError("qa1.question")
+		return er.InvalidField("qa1.question")
 	}
 
 	if r.Qa1.Answer == "" {
-		return er.NewInvalidFieldError("qa1.answer")
+		return er.InvalidField("qa1.answer")
 	}
 
 	if r.Qa2.Question == "" {
-		return er.NewInvalidFieldError("qa2.question")
+		return er.InvalidField("qa2.question")
 	}
 
 	if r.Qa2.Answer == "" {
-		return er.NewInvalidFieldError("qa2.answer")
+		return er.InvalidField("qa2.answer")
 	}
 
 	if r.BirthYear < 1900 || r.BirthYear >= int32(time.Now().Year()) {
-		return er.NewInvalidFieldError("birth_year")
+		return er.InvalidField("birth_year")
 	}
 
 	r.Gender = strings.ToLower(r.Gender)

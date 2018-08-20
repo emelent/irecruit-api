@@ -25,7 +25,7 @@ func (r *RootResolver) Recruits() ([]*RecruitResolver, error) {
 	rawRecruits, err := r.crud.FindAll(config.RecruitsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return results, er.NewGenericError()
+		return results, er.Generic()
 	}
 
 	// process results
@@ -51,66 +51,66 @@ func (r *RootResolver) CreateRecruit(args struct {
 	// check if id is valid
 	id := string(args.AccountID)
 	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
+		return nil, er.InvalidField("id")
 	}
 
 	// check if there's an account with that id, i.e. retrieve the account dummy
 	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(id))
 	if err != nil {
-		return nil, er.NewInvalidFieldError("id")
+		return nil, er.InvalidField("id")
 	}
 
 	// check if the account has a recruit profile
 	account := TransformAccount(rawAccount)
 	if !utils.IsNullID(account.RecruitID) {
-		return nil, er.NewInputError("Account already has a Recruit profile.")
+		return nil, er.Input("Account already has a Recruit profile.")
 	}
 
 	// check if info is nil
 	info := args.Info
 	if info == nil {
-		return nil, er.NewMissingFieldError("info")
+		return nil, er.MissingField("info")
 	}
 
 	// validate info
 	if info.Province == nil {
-		return nil, er.NewMissingFieldError("info.province")
+		return nil, er.MissingField("info.province")
 	}
 	if info.Phone == nil {
-		return nil, er.NewMissingFieldError("info.phone")
+		return nil, er.MissingField("info.phone")
 	}
 	if info.Email == nil {
-		return nil, er.NewMissingFieldError("info.email")
+		return nil, er.MissingField("info.email")
 	}
 	if info.City == nil {
-		return nil, er.NewMissingFieldError("info.city")
+		return nil, er.MissingField("info.city")
 	}
 	if info.Gender == nil {
-		return nil, er.NewMissingFieldError("info.gender")
+		return nil, er.MissingField("info.gender")
 	}
 	if info.Disability == nil {
-		return nil, er.NewMissingFieldError("info.disability")
+		return nil, er.MissingField("info.disability")
 	}
 	if info.Vid1Url == nil {
-		return nil, er.NewMissingFieldError("info.vid1_url")
+		return nil, er.MissingField("info.vid1_url")
 	}
 	if info.Vid2Url == nil {
-		return nil, er.NewMissingFieldError("info.vid2_url")
+		return nil, er.MissingField("info.vid2_url")
 	}
 	if info.BirthYear == nil {
-		return nil, er.NewMissingFieldError("info.birth_year")
+		return nil, er.MissingField("info.birth_year")
 	}
 	if info.Qa1Question == nil {
-		return nil, er.NewMissingFieldError("info.qa1_question")
+		return nil, er.MissingField("info.qa1_question")
 	}
 	if info.Qa1Answer == nil {
-		return nil, er.NewMissingFieldError("info.qa1_answer")
+		return nil, er.MissingField("info.qa1_answer")
 	}
 	if info.Qa2Question == nil {
-		return nil, er.NewMissingFieldError("info.qa2_question")
+		return nil, er.MissingField("info.qa2_question")
 	}
 	if info.Qa2Answer == nil {
-		return nil, er.NewMissingFieldError("info.qa2_answer")
+		return nil, er.MissingField("info.qa2_answer")
 	}
 
 	// create recruit profile
@@ -135,7 +135,7 @@ func (r *RootResolver) CreateRecruit(args struct {
 	// store recruit profile in database
 	if err := r.crud.Insert(config.RecruitsCollection, recruit); err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// attach the recruit profile to the account
@@ -143,7 +143,7 @@ func (r *RootResolver) CreateRecruit(args struct {
 		"recruit_id": recruit.ID,
 	}); err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 	return &RecruitResolver{&recruit, &account}, nil
 }

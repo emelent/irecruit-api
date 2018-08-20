@@ -15,10 +15,10 @@ type Question struct {
 // OK validate Question model
 func (i *Question) OK() error {
 	if i.Question == "" {
-		return er.NewInvalidFieldError("question")
+		return er.InvalidField("question")
 	}
 	if i.IndustryID == "" {
-		return er.NewInvalidFieldError("industry_id")
+		return er.InvalidField("industry_id")
 	}
 
 	return nil

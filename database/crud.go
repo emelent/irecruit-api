@@ -55,7 +55,7 @@ func (db *CRUD) FindAll(collection string, query *bson.M) ([]interface{}, error)
 
 		// check if collection exists
 		if _, ok := db.TempStorage[collection]; !ok {
-			return nil, er.NewCRUDError(errBadCollection)
+			return nil, er.CRUD(errBadCollection)
 		}
 
 		results := filter(db.TempStorage[collection], matchQuery(query))
@@ -74,14 +74,14 @@ func (db *CRUD) FindOne(collection string, query *bson.M) (interface{}, error) {
 
 		// check if collection exists
 		if _, ok := db.TempStorage[collection]; !ok {
-			return nil, er.NewCRUDError(errBadCollection)
+			return nil, er.CRUD(errBadCollection)
 		}
 
 		// find the result
 		result := filterFirst(db.TempStorage[collection], matchQuery(query))
 		var err error
 		if result == nil {
-			err = er.NewCRUDError(errNotFound)
+			err = er.CRUD(errNotFound)
 		}
 		return result, err
 	}
@@ -98,14 +98,14 @@ func (db *CRUD) FindID(collection string, id interface{}) (interface{}, error) {
 
 		// check if collection exists
 		if _, ok := db.TempStorage[collection]; !ok {
-			return nil, er.NewCRUDError(errBadCollection)
+			return nil, er.CRUD(errBadCollection)
 		}
 
 		// find the result
 		result := filterFirst(db.TempStorage[collection], matchID(id))
 		var err error
 		if result == nil {
-			err = er.NewCRUDError(errNotFound)
+			err = er.CRUD(errNotFound)
 		}
 		return result, err
 	}
@@ -122,7 +122,7 @@ func (db *CRUD) UpdateID(collection string, id bson.ObjectId, updates bson.M) er
 
 		// check if collection exists
 		if _, ok := db.TempStorage[collection]; !ok {
-			return er.NewCRUDError(errBadCollection)
+			return er.CRUD(errBadCollection)
 		}
 
 		// perform update
@@ -138,7 +138,7 @@ func (db *CRUD) UpdateID(collection string, id bson.ObjectId, updates bson.M) er
 			}
 		}
 		if !found {
-			return er.NewCRUDError(errNotFound)
+			return er.CRUD(errNotFound)
 		}
 		return nil
 	}
@@ -154,7 +154,7 @@ func (db *CRUD) DeleteID(collection string, id bson.ObjectId) error {
 
 		// check if collection exists
 		if _, ok := db.TempStorage[collection]; !ok {
-			return er.NewCRUDError(errBadCollection)
+			return er.CRUD(errBadCollection)
 		}
 
 		c := db.TempStorage[collection]
@@ -168,7 +168,7 @@ func (db *CRUD) DeleteID(collection string, id bson.ObjectId) error {
 		}
 
 		if !found {
-			return er.NewCRUDError(errNotFound)
+			return er.CRUD(errNotFound)
 		}
 		return nil
 	}

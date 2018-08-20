@@ -16,7 +16,7 @@ type Industry struct {
 // OK validate Industry model
 func (i *Industry) OK() error {
 	if i.Name == "" {
-		return er.NewInvalidFieldError("name")
+		return er.InvalidField("name")
 	}
 
 	i.Name = strings.ToLower(i.Name)

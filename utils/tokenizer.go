@@ -63,6 +63,6 @@ func GetTokenClaims(tokenString string) (*Claims, error) {
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
-	return nil, er.NewInvalidTokenError()
+	return nil, er.InvalidToken()
 
 }

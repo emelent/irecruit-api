@@ -24,7 +24,7 @@ func (r *RootResolver) Edit(args struct {
 
 	// Did we get a token?
 	if args.Token == "" {
-		return nil, er.NewMissingFieldError("token")
+		return nil, er.MissingField("token")
 	}
 
 	// get token claims
@@ -35,18 +35,18 @@ func (r *RootResolver) Edit(args struct {
 
 	// no refresh tokens allowed
 	if claims.Refresh {
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 
 	// get account
 	if !bson.IsObjectIdHex(claims.AccountID) {
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 
 	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(claims.AccountID))
 	if err != nil {
 		log.Println("Failed to find account by ID from token =>", err)
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 	account := TransformAccount(rawAccount)
 
@@ -57,14 +57,14 @@ func (r *RootResolver) Edit(args struct {
 
 			// check if account has recruit profile
 			if utils.IsNullID(account.RecruitID) {
-				return nil, er.NewInputError("Failed to enfore 'RECRUIT'.")
+				return nil, er.Input("Failed to enfore 'RECRUIT'.")
 			}
 
 			// retrieve Recruit profile
 			rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
 			if err != nil {
 				log.Println("Failed to find recruit =>", err)
-				return nil, er.NewGenericError()
+				return nil, er.Generic()
 			}
 
 			// return RecruitEditor
@@ -73,12 +73,12 @@ func (r *RootResolver) Edit(args struct {
 			return &EditorResolver{Editor}, nil
 
 		case "HUNTER": // try to enforce hunter
-			return nil, er.NewInputError("Unimplemented")
+			return nil, er.Input("Unimplemented")
 
 		case "SYSTEM": // try to enforce system
 			// check if account is sys account
 			if !utils.IsSysAccount(&account) {
-				return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+				return nil, er.Input("Failed to enfore 'SYSTEM'.")
 			}
 
 			// return sysEditor
@@ -103,14 +103,14 @@ func (r *RootResolver) Edit(args struct {
 		rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
 		if err != nil {
 			log.Println("Failed to find recruit =>", err)
-			return nil, er.NewGenericError()
+			return nil, er.Generic()
 		}
 		recruit := TransformRecruit(rawRecruit)
 		Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
 		return &EditorResolver{Editor}, nil
 	}
 
-	return nil, er.NewGenericError()
+	return nil, er.Generic()
 }
 
 // -----------------
@@ -136,14 +136,14 @@ func (r *RecruitEditorResolver) RemoveRecruit() (*string, error) {
 
 	// attempt to remove Recruit
 	if err := r.crud.DeleteID(config.RecruitsCollection, r.r.ID); err != nil {
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// remove the account's recruit_id
 	if err := r.crud.UpdateID(config.AccountsCollection, r.a.ID, bson.M{
 		"recruit_id": models.NullObjectID,
 	}); err != nil {
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	result := "Recruit successfully removed."
@@ -203,7 +203,7 @@ func (r *SysEditorResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string
 func (r *SysEditorResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
 	id := string(args.ID)
 	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("id")
+		return nil, er.InvalidField("id")
 	}
 
 	return ResolveRemoveAccount(r.crud, bson.ObjectIdHex(id))
@@ -229,54 +229,54 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 	// check if the account has a recruit profile
 	account := r.a
 	if !utils.IsNullID(account.RecruitID) {
-		return nil, er.NewInputError("Account already has a Recruit profile.")
+		return nil, er.Input("Account already has a Recruit profile.")
 	}
 
 	// check if info is nil
 	info := args.Info
 	if info == nil {
-		return nil, er.NewMissingFieldError("info")
+		return nil, er.MissingField("info")
 	}
 
 	// validate info
 	if info.Province == nil {
-		return nil, er.NewMissingFieldError("info.province")
+		return nil, er.MissingField("info.province")
 	}
 	if info.Phone == nil {
-		return nil, er.NewMissingFieldError("info.phone")
+		return nil, er.MissingField("info.phone")
 	}
 	if info.Email == nil {
-		return nil, er.NewMissingFieldError("info.email")
+		return nil, er.MissingField("info.email")
 	}
 	if info.City == nil {
-		return nil, er.NewMissingFieldError("info.city")
+		return nil, er.MissingField("info.city")
 	}
 	if info.Gender == nil {
-		return nil, er.NewMissingFieldError("info.gender")
+		return nil, er.MissingField("info.gender")
 	}
 	if info.Disability == nil {
-		return nil, er.NewMissingFieldError("info.disability")
+		return nil, er.MissingField("info.disability")
 	}
 	if info.Vid1Url == nil {
-		return nil, er.NewMissingFieldError("info.vid1_url")
+		return nil, er.MissingField("info.vid1_url")
 	}
 	if info.Vid2Url == nil {
-		return nil, er.NewMissingFieldError("info.vid2_url")
+		return nil, er.MissingField("info.vid2_url")
 	}
 	if info.BirthYear == nil {
-		return nil, er.NewMissingFieldError("info.birth_year")
+		return nil, er.MissingField("info.birth_year")
 	}
 	if info.Qa1Question == nil {
-		return nil, er.NewMissingFieldError("info.qa1_question")
+		return nil, er.MissingField("info.qa1_question")
 	}
 	if info.Qa1Answer == nil {
-		return nil, er.NewMissingFieldError("info.qa1_answer")
+		return nil, er.MissingField("info.qa1_answer")
 	}
 	if info.Qa2Question == nil {
-		return nil, er.NewMissingFieldError("info.qa2_question")
+		return nil, er.MissingField("info.qa2_question")
 	}
 	if info.Qa2Answer == nil {
-		return nil, er.NewMissingFieldError("info.qa2_answer")
+		return nil, er.MissingField("info.qa2_answer")
 	}
 
 	// create recruit profile
@@ -302,7 +302,7 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 	// store recruit profile in database
 	if err := r.crud.Insert(config.RecruitsCollection, recruit); err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// attach the recruit profile to the account
@@ -310,7 +310,7 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 		"recruit_id": recruit.ID,
 	}); err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 	return &RecruitResolver{&recruit, account}, nil
 }

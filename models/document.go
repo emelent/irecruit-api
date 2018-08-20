@@ -17,13 +17,13 @@ type Document struct {
 // OK validates fields of document model
 func (d *Document) OK() error {
 	if d.URL == "" {
-		return er.NewInvalidFieldError("url")
+		return er.InvalidField("url")
 	}
 	if d.DocType == "" {
-		return er.NewInvalidFieldError("doc_type")
+		return er.InvalidField("doc_type")
 	}
 	if d.OwnerType == "" {
-		return er.NewInvalidFieldError("owner_type")
+		return er.InvalidField("owner_type")
 	}
 	return nil
 }

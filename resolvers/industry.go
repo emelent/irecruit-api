@@ -24,7 +24,7 @@ func (r *RootResolver) Industries() ([]*IndustryResolver, error) {
 	rawIndustries, err := r.crud.FindAll(config.IndustriesCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// process results
@@ -44,7 +44,7 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryReso
 	if _, err := r.crud.FindOne(config.IndustriesCollection, &bson.M{
 		"name": strings.ToLower(args.Name),
 	}); err == nil {
-		return nil, er.NewInputError("An industry by that name already exists.")
+		return nil, er.Input("An industry by that name already exists.")
 	}
 
 	// create industry
@@ -59,7 +59,7 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryReso
 
 	// store industry in db
 	if err := r.crud.Insert(config.IndustriesCollection, industry); err != nil {
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// return industry

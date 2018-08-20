@@ -12,44 +12,44 @@ func (e CustomError) Error() string {
 	return e.Message
 }
 
-// NewCRUDError creates a new CRUD error
-func NewCRUDError(msg string) CustomError {
+// CRUD creates a new CRUD error
+func CRUD(msg string) CustomError {
 	return CustomError{msg, 200}
 }
 
-// NewMissingFieldError creates a new missing field error
-func NewMissingFieldError(field string) CustomError {
+// MissingField creates a new missing field error
+func MissingField(field string) CustomError {
 	msg := fmt.Sprintf("'%s' field is required.", field)
 	return CustomError{msg, 001}
 }
 
-// NewInvalidFieldError creates a new invalid field error
-func NewInvalidFieldError(field string) CustomError {
+// InvalidField creates a new invalid field error
+func InvalidField(field string) CustomError {
 	msg := fmt.Sprintf("Invalid field '%s'.", field)
 	return CustomError{msg, 002}
 }
 
-// NewInvalidTokenError returns a new invalid token error
-func NewInvalidTokenError() CustomError {
+// InvalidToken returns a new invalid token error
+func InvalidToken() CustomError {
 	return CustomError{"Invalid token.", 003}
 }
 
-// NewInvalidCredentialsError returns a new invalid credentials error
-func NewInvalidCredentialsError() CustomError {
+// InvalidCredentials returns a new invalid credentials error
+func InvalidCredentials() CustomError {
 	return CustomError{"Invalid credentials.", 004}
 }
 
-// NewInputError returns a new invalid input error
-func NewInputError(msg string) CustomError {
+// Input returns a new invalid input error
+func Input(msg string) CustomError {
 	return CustomError{msg, 005}
 }
 
-// NewInternalError creates a new internal error
-func NewInternalError(msg string) CustomError {
+// Internal creates a new internal error
+func Internal(msg string) CustomError {
 	return CustomError{msg, 101}
 }
 
-// NewGenericError creates a new internal error
-func NewGenericError() CustomError {
+// Generic creates a new internal error
+func Generic() CustomError {
 	return CustomError{"Oops, something went wrong, please try again.", 102}
 }

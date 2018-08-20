@@ -21,7 +21,7 @@ func (r *RootResolver) Documents() ([]*DocumentResolver, error) {
 	rawDocuments, err := r.crud.FindAll(config.DocumentsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// process results
@@ -45,7 +45,7 @@ func (r *RootResolver) CreateDocument(args struct {
 	// check that OwnerID is valid
 	id := string(args.OwnerID)
 	if !bson.IsObjectIdHex(id) {
-		return nil, er.NewInvalidFieldError("owner_id")
+		return nil, er.InvalidField("owner_id")
 	}
 
 	// create document
@@ -63,7 +63,7 @@ func (r *RootResolver) CreateDocument(args struct {
 
 	// attempt to insert
 	if err := r.crud.Insert(config.DocumentsCollection, document); err != nil {
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	return &DocumentResolver{&document}, nil

@@ -24,7 +24,7 @@ func (r *RootResolver) Accounts() ([]*AccountResolver, error) {
 	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// process results
@@ -66,7 +66,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	err = r.crud.Insert(config.AccountsCollection, account)
 	if err != nil {
 		log.Println("Failed to create Account =>", err)
-		return nil, er.NewInternalError(genericErr)
+		return nil, er.Internal(genericErr)
 	}
 
 	// create refresh token
@@ -74,7 +74,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	refresh, err := utils.CreateRefreshToken(id)
 	if err != nil {
 		log.Println("Failed to create refresh token =>", err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// access token
@@ -82,7 +82,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	access, err := utils.CreateAccessToken(id, ua)
 	if err != nil {
 		log.Println("Failed to create access token =>", err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 
 	// create token manager
@@ -98,7 +98,7 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	err = r.crud.Insert(config.TokenManagersCollection, tokenMgr)
 	if err != nil {
 		log.Println("Failed to create TokenManager", err)
-		return nil, er.NewInternalError(genericErr)
+		return nil, er.Internal(genericErr)
 	}
 
 	return &TokensResolver{refresh: refresh, access: access}, nil

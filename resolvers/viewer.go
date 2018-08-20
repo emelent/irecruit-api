@@ -25,7 +25,7 @@ func (r *RootResolver) View(args struct {
 	// Did we get a token?
 	if args.Token == "" {
 		// return a guest viewer
-		return nil, er.NewMissingFieldError("token")
+		return nil, er.MissingField("token")
 	}
 
 	// get token claims
@@ -36,19 +36,19 @@ func (r *RootResolver) View(args struct {
 
 	// no refresh tokens allowed
 	if claims.Refresh {
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 
 	// check claims AccountID
 	if !bson.IsObjectIdHex(claims.AccountID) {
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 
 	// get account
 	rawAccount, err := r.crud.FindID(config.AccountsCollection, bson.ObjectIdHex(claims.AccountID))
 	if err != nil {
 		log.Println("Failed to find account by ID from token =>", err)
-		return nil, er.NewInvalidTokenError()
+		return nil, er.InvalidToken()
 	}
 	account := TransformAccount(rawAccount)
 
@@ -56,14 +56,14 @@ func (r *RootResolver) View(args struct {
 	viewAsRecruit := func() (*ViewerResolver, error) {
 		// check if account has recruit profile
 		if utils.IsNullID(account.RecruitID) {
-			return nil, er.NewInputError("Failed to enfore 'RECRUIT'.")
+			return nil, er.Input("Failed to enfore 'RECRUIT'.")
 		}
 
 		// retrieve Recruit profile
 		rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
 		if err != nil {
 			log.Println("Failed to find recruit =>", err)
-			return nil, er.NewGenericError()
+			return nil, er.Generic()
 		}
 
 		// return RecruitViewer
@@ -76,7 +76,7 @@ func (r *RootResolver) View(args struct {
 	viewAsSys := func() (*ViewerResolver, error) {
 		// check if account is sys account
 		if !utils.IsSysAccount(&account) {
-			return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+			return nil, er.Input("Failed to enfore 'SYSTEM'.")
 		}
 
 		// return sysViewer
@@ -88,7 +88,7 @@ func (r *RootResolver) View(args struct {
 	viewAsAccount := func() (*ViewerResolver, error) {
 		// check if account is sys account
 		if !utils.IsSysAccount(&account) {
-			return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+			return nil, er.Input("Failed to enfore 'SYSTEM'.")
 		}
 
 		// return sysViewer
@@ -102,13 +102,13 @@ func (r *RootResolver) View(args struct {
 		case "RECRUIT":
 			return viewAsRecruit()
 		case "HUNTER":
-			return nil, er.NewInputError("Unimplemented")
+			return nil, er.Input("Unimplemented")
 		case "SYSTEM":
 			return viewAsSys()
 		case "ACCOUNT":
 			return viewAsAccount()
 		default:
-			return nil, er.NewInvalidFieldError("enforce")
+			return nil, er.InvalidField("enforce")
 		}
 	}
 
@@ -175,7 +175,7 @@ func (r *RecruitViewerResolver) Profile() (*RecruitResolver, error) {
 	rawAccount, err := r.crud.FindID(config.AccountsCollection, r.a.ID)
 	if err != nil {
 		log.Println(err)
-		return nil, er.NewGenericError()
+		return nil, er.Generic()
 	}
 	account := TransformAccount(rawAccount)
 
