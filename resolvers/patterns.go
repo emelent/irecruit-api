@@ -46,7 +46,7 @@ func ResolveRemoveAccount(crud *db.CRUD, id bson.ObjectId) (*string, error) {
 	}
 
 	// delete the account's token manager
-	tokenMgr := transformTokenManager(rawTokenMgr)
+	tokenMgr := TransformTokenManager(rawTokenMgr)
 	err = crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
 	if err != nil {
 		log.Println("Failed to delete TokenManager =>", err)

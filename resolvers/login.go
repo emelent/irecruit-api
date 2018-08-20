@@ -25,7 +25,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	if err != nil {
 		return nil, er.NewInvalidCredentialsError()
 	}
-	account := transformAccount(rawAccount)
+	account := TransformAccount(rawAccount)
 
 	// check if passwords match
 	if !account.CheckPassword(args.Password) {
@@ -38,7 +38,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.NewGenericError()
 	}
-	tokenMgr := transformTokenManager(rawTokenMgr)
+	tokenMgr := TransformTokenManager(rawTokenMgr)
 
 	// get current refresh token
 	claims, err := utils.GetTokenClaims(tokenMgr.RefreshToken)

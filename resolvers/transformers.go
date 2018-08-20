@@ -6,8 +6,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// transform interface to Account model
-func transformAccount(in interface{}) models.Account {
+// TransformAccount transforms interface to Account model
+func TransformAccount(in interface{}) models.Account {
 	var account models.Account
 	switch v := in.(type) {
 	case bson.M:
@@ -30,8 +30,8 @@ func transformAccount(in interface{}) models.Account {
 	return account
 }
 
-// transform  interface into TokenManager model
-func transformTokenManager(in interface{}) models.TokenManager {
+// TransformTokenManager transforms interface into TokenManager model
+func TransformTokenManager(in interface{}) models.TokenManager {
 	var tokenMgr models.TokenManager
 	switch v := in.(type) {
 	case bson.M:
@@ -51,8 +51,8 @@ func transformTokenManager(in interface{}) models.TokenManager {
 	return tokenMgr
 }
 
-// transform interface into Recruit model
-func transformRecruit(in interface{}) models.Recruit {
+// TransformRecruit transforms interface into Recruit model
+func TransformRecruit(in interface{}) models.Recruit {
 	var recruit models.Recruit
 	switch v := in.(type) {
 	case bson.M:
@@ -70,8 +70,8 @@ func transformRecruit(in interface{}) models.Recruit {
 	return recruit
 }
 
-// transform interface into Industry model
-func transformIndustry(in interface{}) models.Industry {
+// TransformIndustry transforms interface into Industry model
+func TransformIndustry(in interface{}) models.Industry {
 	var industry models.Industry
 	switch v := in.(type) {
 	case bson.M:
@@ -88,8 +88,8 @@ func transformIndustry(in interface{}) models.Industry {
 	return industry
 }
 
-// transform interface into Question model
-func transformQuestion(in interface{}) models.Question {
+// TransformQuestion transforms interface into Question model
+func TransformQuestion(in interface{}) models.Question {
 	var question models.Question
 	switch v := in.(type) {
 	case bson.M:
@@ -106,8 +106,8 @@ func transformQuestion(in interface{}) models.Question {
 	return question
 }
 
-// transformDocument interface into Document model
-func transformDocument(in interface{}) models.Document {
+// TransformDocument transforms interface into Document model
+func TransformDocument(in interface{}) models.Document {
 	var document models.Document
 	switch v := in.(type) {
 	case bson.M:

@@ -31,12 +31,12 @@ func (r *RootResolver) Recruits() ([]*RecruitResolver, error) {
 	// process results
 	for _, raw := range rawRecruits {
 		var account models.Account
-		recruit := transformRecruit(raw)
+		recruit := TransformRecruit(raw)
 		rawAccount, e := r.crud.FindOne(config.AccountsCollection, &bson.M{
 			"recruit_id": recruit.ID,
 		})
 		if e == nil {
-			account = transformAccount(rawAccount)
+			account = TransformAccount(rawAccount)
 			results = append(results, &RecruitResolver{&recruit, &account})
 		}
 	}
@@ -61,7 +61,7 @@ func (r *RootResolver) CreateRecruit(args struct {
 	}
 
 	// check if the account has a recruit profile
-	account := transformAccount(rawAccount)
+	account := TransformAccount(rawAccount)
 	if !utils.IsNullID(account.RecruitID) {
 		return nil, er.NewInputError("Account already has a Recruit profile.")
 	}

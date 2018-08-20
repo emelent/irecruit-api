@@ -27,7 +27,7 @@ func (r *RootResolver) Documents() ([]*DocumentResolver, error) {
 	// process results
 	results := make([]*DocumentResolver, 0)
 	for _, raw := range rawDocuments {
-		document := transformDocument(raw)
+		document := TransformDocument(raw)
 		results = append(results, &DocumentResolver{&document})
 	}
 	return results, err
