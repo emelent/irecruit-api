@@ -45,7 +45,7 @@ func (r *rViewerResolver) Profile() (*recruitResolver, error) {
 	defer r.crud.CloseCopy()
 
 	// retrieve account
-	rawAccount, err := r.crud.FindID(config.AccountsCollection, r.r.ID)
+	rawAccount, err := r.crud.FindID(config.AccountsCollection, r.a.ID)
 	if err != nil {
 		log.Println(err)
 		return nil, er.NewGenericError()
@@ -150,7 +150,10 @@ func (r *viewerResolver) ToSysViewer() (*sViewerResolver, bool) {
 }
 
 // View resolves "view" gql query
-func (r *RootResolver) View(args struct{ Token *string }) (*viewerResolver, error) {
+func (r *RootResolver) View(args struct {
+	Token   *string
+	Enforce *string
+}) (*viewerResolver, error) {
 
 	// Did we get a token?
 	if args.Token == nil {
@@ -179,6 +182,41 @@ func (r *RootResolver) View(args struct{ Token *string }) (*viewerResolver, erro
 		return nil, er.NewGenericError()
 	}
 	account := transformAccount(rawAccount)
+
+	// enforce an enforceable
+	if args.Enforce != nil {
+		switch *args.Enforce {
+		case "RECRUIT": // try to enforce recruit
+
+			// check if account has recruit profile
+			if utils.IsNullID(account.RecruitID) {
+				return nil, er.NewInputError("Failed to enfore 'RECRUIT'.")
+			}
+
+			// retrieve Recruit profile
+			rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
+			if err != nil {
+				log.Println("Failed to find recruit =>", err)
+				return nil, er.NewGenericError()
+			}
+			// return RecruitViewer
+			recruit := transformRecruit(rawRecruit)
+			viewer := &rViewerResolver{&recruit, &account, r.crud}
+			return &viewerResolver{viewer}, nil
+
+		case "HUNTER": // try to enforce hunter
+			return nil, er.NewInputError("Unimplemented")
+
+		case "SYSTEM": // try to enforce system
+			// check if account is sys account
+			if !utils.IsSysAccount(&account) {
+				return nil, er.NewInputError("Failed to enfore 'SYSTEM'.")
+			}
+
+			viewer := &sViewerResolver{&account, r.crud}
+			return &viewerResolver{viewer}, nil
+		}
+	}
 
 	// check if account is sys account
 	if utils.IsSysAccount(&account) {

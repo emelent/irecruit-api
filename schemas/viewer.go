@@ -43,9 +43,16 @@ var ViewerSchema = Schema{
 	#		email: String!
 	#		industries: [Industry]!
 	#	}
+
+		enum Enforce{
+			RECRUIT,
+			HUNTER,
+			SYSTEM
+		}
 	`,
 	Queries: `
-		view(token: String):Viewer
+		view(token: String, enforce: Enforce):Viewer
+		#edit(token: String!, enfore: Enforce):Viewer
 	`,
 	Mutations: `
 	`,
