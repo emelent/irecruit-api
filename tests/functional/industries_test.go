@@ -2,6 +2,7 @@ package functionaltests
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"gopkg.in/mgo.v2/bson"
@@ -77,7 +78,7 @@ func TestCreateIndustryValid(t *testing.T) {
 	if rOk {
 		assert.Contains(resultIndusty, "id", msgMissingResponseData)
 		assert.Contains(resultIndusty, "name", msgMissingResponseData)
-		assert.Equal(resultIndusty["name"], name, msgInvalidResult)
+		assert.Equal(strings.ToLower(name), resultIndusty["name"], msgInvalidResult)
 	}
 }
 
