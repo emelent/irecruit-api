@@ -13,6 +13,9 @@ import (
 func TransformQA(in interface{}) QA {
 	var qa QA
 	switch v := in.(type) {
+	case map[string]interface{}:
+		qa.Question = v["question"].(string)
+		qa.Answer = v["answer"].(string)
 	case bson.M:
 		qa.Question = v["question"].(string)
 		qa.Answer = v["answer"].(string)
