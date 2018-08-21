@@ -21,12 +21,6 @@ func (r *RootResolver) Edit(args struct {
 	Token   string
 	Enforce *string
 }) (*EditorResolver, error) {
-
-	// Did we get a token?
-	if args.Token == "" {
-		return nil, er.MissingField("token")
-	}
-
 	// get token claims
 	claims, err := utils.GetTokenClaims(args.Token)
 	if err != nil {
@@ -50,67 +44,67 @@ func (r *RootResolver) Edit(args struct {
 	}
 	account := models.TransformAccount(rawAccount)
 
-	// enforce an enforceable
-	if args.Enforce != nil {
-		switch *args.Enforce {
-		case "RECRUIT": // try to enforce recruit
-
-			// check if account has recruit profile
-			if utils.IsNullID(account.RecruitID) {
-				return nil, er.Input("Failed to enfore 'RECRUIT'.")
-			}
-
-			// retrieve Recruit profile
-			rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
-			if err != nil {
-				log.Println("Failed to find recruit =>", err)
-				return nil, er.Generic()
-			}
-
-			// return RecruitEditor
-			recruit := models.TransformRecruit(rawRecruit)
-			Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
-			return &EditorResolver{Editor}, nil
-
-		case "HUNTER": // try to enforce hunter
-			return nil, er.Input("Unimplemented")
-
-		case "SYSTEM": // try to enforce system
-			// check if account is sys account
-			if !utils.IsSysAccount(&account) {
-				return nil, er.Input("Failed to enfore 'SYSTEM'.")
-			}
-
-			// return sysEditor
-			Editor := &SysEditorResolver{&account, r.crud}
-			return &EditorResolver{Editor}, nil
-
-		case "ACCOUNT":
-			// return accountEditor
-			return &EditorResolver{&AccountEditorResolver{&account, r.crud}}, nil
-
+	editAsRecruit := func() (*EditorResolver, error) {
+		// check if account has recruit profile
+		if utils.IsNullID(account.RecruitID) {
+			return nil, er.Input("Failed to enforce 'RECRUIT'.")
 		}
-	}
 
-	// check if account is sys account
-	if utils.IsSysAccount(&account) {
-		Editor := &SysEditorResolver{&account, r.crud}
-		return &EditorResolver{Editor}, nil
-	}
-
-	// check if account has recruit profile
-	if !utils.IsNullID(account.RecruitID) {
+		// retrieve Recruit profile
 		rawRecruit, err := r.crud.FindID(config.RecruitsCollection, account.RecruitID)
 		if err != nil {
 			log.Println("Failed to find recruit =>", err)
 			return nil, er.Generic()
 		}
+
+		// return RecruitEditor
 		recruit := models.TransformRecruit(rawRecruit)
 		Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
 		return &EditorResolver{Editor}, nil
 	}
+	editAsAccount := func() (*EditorResolver, error) {
+		return &EditorResolver{&AccountEditorResolver{&account, r.crud}}, nil
+	}
 
-	return nil, er.Generic()
+	editAsSys := func() (*EditorResolver, error) {
+		// check if account is sys account
+		if !utils.IsSysAccount(&account) {
+			return nil, er.Input("Failed to enfore 'SYSTEM'.")
+		}
+
+		// return sysEditor
+		Editor := &SysEditorResolver{&account, r.crud}
+		return &EditorResolver{Editor}, nil
+	}
+
+	// enforce an enforceable
+	if args.Enforce != nil {
+		switch *args.Enforce {
+		case "RECRUIT":
+			return editAsRecruit()
+		case "HUNTER": // try to enforce hunter
+			return nil, er.Input("Unimplemented")
+
+		case "SYSTEM": // try to enforce system
+			return editAsSys()
+		case "ACCOUNT":
+			return editAsAccount()
+
+		}
+	}
+
+	// try to edit as SysEditor
+	if editor, err := editAsSys(); err == nil {
+		return editor, nil
+	}
+
+	// try to edit as RecruitEditor
+	if editor, err := editAsRecruit(); err == nil {
+		return editor, nil
+	}
+
+	// if all else fails edit as AccountEditor
+	return editAsAccount()
 }
 
 // -----------------
@@ -128,6 +122,54 @@ type RecruitEditorResolver struct {
 	r    *models.Recruit
 	a    *models.Account
 	crud *db.CRUD
+}
+
+// UpdateRecruit resolves RecruitEditor.UpdateRecruit
+func (r *RecruitEditorResolver) UpdateRecruit(args struct {
+	Info *recruitDetails
+}) (*RecruitResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// prepare updates
+	updates := bson.M{}
+	info := args.Info
+	if info.Phone != nil {
+		updates["phone"] = *info.Phone
+	}
+	if info.Email != nil {
+		updates["email"] = *info.Email
+	}
+	if info.Province != nil {
+		updates["province"] = *info.Province
+	}
+	if info.City != nil {
+		updates["city"] = *info.City
+	}
+	if info.Gender != nil {
+		updates["gender"] = *info.Gender
+	}
+	if info.Disability != nil {
+		updates["disability"] = *info.Disability
+	}
+	if info.Vid1Url != nil {
+		updates["vid1_url"] = *info.Vid1Url
+	}
+	if info.Vid2Url != nil {
+		updates["vid2_url"] = *info.Vid2Url
+	}
+	if info.BirthYear != nil {
+		updates["birth_year"] = *info.BirthYear
+	}
+
+	// perform update
+	rawRecruit, err := GenericUpdateByID(r.crud, config.RecruitsCollection, r.r.ID, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	// return updated recruit profile
+	recruit := models.TransformRecruit(rawRecruit)
+	return &RecruitResolver{&recruit, r.a}, nil
 }
 
 // RemoveRecruit resolves "removeRecruit" mutation
@@ -217,6 +259,37 @@ func (r *SysEditorResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string
 type AccountEditorResolver struct {
 	a    *models.Account
 	crud *db.CRUD
+}
+
+// UpdateAccount resolves AccountEditor.UpdateAccount
+func (r *AccountEditorResolver) UpdateAccount(args struct {
+	Info *accountDetails
+}) (*AccountResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// prepare updates
+	updates := bson.M{}
+	info := args.Info
+
+	if info.Email != nil {
+		updates["email"] = *info.Email
+	}
+	if info.Name != nil {
+		updates["name"] = *info.Name
+	}
+	if info.Surname != nil {
+		updates["surname"] = *info.Surname
+	}
+
+	// perform update
+	rawAccount, err := GenericUpdateByID(r.crud, config.AccountsCollection, r.a.ID, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	// return updated account
+	account := models.TransformAccount(rawAccount)
+	return &AccountResolver{&account}, nil
 }
 
 // RemoveAccount resolves AccountEditor.RemoveAccount which removes the current account
