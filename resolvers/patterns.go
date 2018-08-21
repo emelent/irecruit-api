@@ -28,24 +28,18 @@ func ResolveRemoveByID(crud *db.CRUD, collection, name, id string) (*string, err
 }
 
 // GenericUpdateByID performs a generic update and returns the new result
-func GenericUpdateByID(crud *db.CRUD, collection, name, id string, updates bson.M) (interface{}, error) {
+func GenericUpdateByID(crud *db.CRUD, collection string, id bson.ObjectId, updates bson.M) (interface{}, error) {
 	defer crud.CloseCopy()
 
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.InvalidField("id")
-	}
-
 	// attempt update
-	bID := bson.ObjectIdHex(id)
-	if err := crud.UpdateID(collection, bID, updates); err != nil {
+	if err := crud.UpdateID(collection, id, updates); err != nil {
 		return nil, er.Generic()
 	}
-	result, err := crud.FindID(collection, bID)
+	result, err := crud.FindID(collection, id)
 	if err != nil {
 		return nil, er.Generic()
 	}
-	return &result, nil
+	return result, nil
 }
 
 // ResolveRemoveAccount is a generic resolver for removing an account by ID along
