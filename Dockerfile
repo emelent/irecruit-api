@@ -4,9 +4,11 @@ RUN mkdir /app
 ADD . /app/ 
 WORKDIR /app 
 RUN go get -d -v ./...
-RUN make static-build
+RUN make production-build
 
 # prepare final image
+# ADD create env files
+# TODO export ENV=production
 FROM scratch
 COPY --from=build /app/main /main
 CMD ["/main"]
