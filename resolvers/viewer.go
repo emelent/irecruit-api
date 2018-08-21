@@ -25,7 +25,7 @@ func (r *RootResolver) View(args struct {
 	// get token claims
 	claims, err := utils.GetTokenClaims(args.Token)
 	if err != nil {
-		return nil, err
+		return nil, er.InvalidToken()
 	}
 
 	// no refresh tokens allowed
