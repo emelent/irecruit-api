@@ -45,6 +45,8 @@ var ViewerSchema = Schema{
 			email: String!
 			accounts: [Account]!
 			#recruits: [Recruit]!
+			#questions: [Question]!
+			#documents: [Documents]!
 		}
 
 		enum Enforce{
