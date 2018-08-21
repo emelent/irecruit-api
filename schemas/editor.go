@@ -5,9 +5,21 @@ var EditorSchema = Schema{
 	Types: `
 		union Editor = RecruitEditor | SysEditor | AccountEditor
 
+		input QaDetails{
+			question_id: ID!
+			answer: String!
+		}
+
+		type AccountEditor{
+			createRecruit(info: RecruitDetails!): Recruit
+			removeAccount(): String
+			updateAccount(info: AccountDetails): Account
+		}
+
 		type RecruitEditor{
 			removeRecruit: String
-			#updateRecruit(): Recruit
+			updateRecruit(info: RecruitDetails): Recruit
+			updateQAs(qa1: QaDetails, qa2: QaDetails): String
 		}
 		
 		type SysEditor{
@@ -25,12 +37,6 @@ var EditorSchema = Schema{
 			#updateAccount(id: ID!): Account
 			#updateIndustry(id: ID!): Industry
 			#updateQuestion(id: ID!): Industry
-		}
-
-		type AccountEditor{
-			createRecruit(info: RecruitDetails!): Recruit
-			removeAccount(): String
-			#updateAccount(): Account
 		}
 	`,
 	Queries: `
