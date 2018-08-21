@@ -14,18 +14,14 @@ import (
 func TestIndustryList(t *testing.T) {
 
 	//prepare request
+	assert := assert.New(t)
 	handler := createLoadedGqlHandler()
 	method := "industries"
 	query := fmt.Sprintf(`query{%s{name}}`, method)
 
-	// request and respond
+	// request
 	response, err := gqlRequestAndRespond(handler, query, nil)
-
-	//process response
-	assert := assert.New(t)
-	if err != nil {
-		assert.Fail("Failed to process response:", err)
-	}
+	failOnError(assert, err)
 
 	// expected result
 	list := make([]interface{}, 0)
@@ -58,11 +54,9 @@ func TestCreateIndustryValid(t *testing.T) {
 		}
 	`, method, name)
 
-	// request and respond
+	// request
 	response, err := gqlRequestAndRespond(handler, query, nil)
-	if err != nil {
-		assert.Fail("Failed to process response:", err)
-	}
+	failOnError(assert, err)
 
 	// expected
 	expected := map[string]interface{}{
@@ -76,6 +70,7 @@ func TestCreateIndustryValid(t *testing.T) {
 }
 
 func TestCreateIndustryInvalid(t *testing.T) {
+	assert := assert.New(t)
 	handler := createLoadedGqlHandler()
 
 	// prepare request
@@ -104,13 +99,10 @@ func TestCreateIndustryInvalid(t *testing.T) {
 	}
 	for i, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
-		// request and respond
+		// request
 		response, err := gqlRequestAndRespond(handler, query, nil)
-		//process response
-		assert := assert.New(t)
-		if err != nil {
-			assert.Fail("Failed to process response:", err)
-		}
+
+		failOnError(assert, err)
 
 		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
 	}
@@ -130,12 +122,7 @@ func TestRemoveIndustryValid(t *testing.T) {
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
-
-	//process response
-	if err != nil {
-		assert.Fail("Failed to process response:", err)
-	}
-
+	failOnError(assert, err)
 	// expected
 	expected := map[string]interface{}{
 		"data": map[string]interface{}{
@@ -146,6 +133,7 @@ func TestRemoveIndustryValid(t *testing.T) {
 }
 
 func TestRemoveIndustryInvalid(t *testing.T) {
+	assert := assert.New(t)
 	handler := createLoadedGqlHandler()
 
 	// prepare request
@@ -173,13 +161,9 @@ func TestRemoveIndustryInvalid(t *testing.T) {
 
 	for i, in := range input {
 		query := fmt.Sprintf(queryFormat, method, in)
-		// request and respond
+		// request
 		response, err := gqlRequestAndRespond(handler, query, nil)
-		//process response
-		assert := assert.New(t)
-		if err != nil {
-			assert.Fail("Failed to process response:", err)
-		}
+		failOnError(assert, err)
 
 		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
 	}
