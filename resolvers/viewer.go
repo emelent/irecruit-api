@@ -103,15 +103,15 @@ func (r *RootResolver) View(args struct {
 
 	// try to view as SysViewer
 	if viewer, err := viewAsSys(); err == nil {
-		return viewer, err
+		return viewer, nil
 	}
 
 	// try to view as RecruitViewer
 	if viewer, err := viewAsRecruit(); err == nil {
-		return viewer, err
+		return viewer, nil
 	}
 
-	// view as just a bare account
+	// if all else fails view as AccountEditor
 	return viewAsAccount()
 }
 
