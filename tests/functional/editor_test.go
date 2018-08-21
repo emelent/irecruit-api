@@ -133,3 +133,52 @@ func TestEditRecruitEditor(t *testing.T) {
 	}
 	assert.Equal(expected, response, msgInvalidResult)
 }
+
+func TestRecruitEditorUpdateQAs(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as recruit user
+	token, _ := login(crud, getRecruitUserAccount().ID, "none")
+
+	// prep data
+	qa1Question := moc.Questions[0]
+	qa2Question := moc.Questions[0]
+	qa1Answer := "Interesting... very interesting."
+	qa2Answer := "No idea."
+
+	// prep query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s", enforce: RECRUIT){
+				... on RecruitEditor{
+					updateQAs(
+						qa1:{
+							question_id: "%s",
+							answer: "%s"
+						}, 
+						qa2:{
+							question_id: "%s",
+							answer: "%s"
+						}
+					)
+				}
+			}
+		}
+	`, token, qa1Question.ID.Hex(), qa1Answer, qa2Question.ID.Hex(), qa2Answer)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"updateQAs": "QuestionAnswer(s) successfully updated.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResult)
+}
