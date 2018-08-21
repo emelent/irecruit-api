@@ -74,18 +74,21 @@ func createLoadedGqlHandler() http.Handler {
 	return createGqlHandler(crud)
 }
 
+// panicOnError panics on error
 func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
+// failOnError  fails test on error
 func failOnError(assert *assert.Assertions, err error) {
 	if err != nil {
 		assert.Fail(err.Error())
 	}
 }
 
+// login logs in as user specified by id setting the user-agent to value in ua
 func login(crud *db.CRUD, id bson.ObjectId, ua string) (string, string) {
 	accessToken, err := utils.CreateAccessToken(id.Hex(), ua)
 	panicOnError(err)
@@ -101,6 +104,7 @@ func login(crud *db.CRUD, id bson.ObjectId, ua string) (string, string) {
 	return accessToken, tokenManager.RefreshToken
 }
 
+// To be removed
 func assertGqlData(method string, response map[string]interface{}, assert *assert.Assertions) map[string]interface{} {
 	dataPortion, dOk := response["data"].(map[string]interface{})
 
@@ -109,6 +113,31 @@ func assertGqlData(method string, response map[string]interface{}, assert *asser
 	assert.Contains(response["data"], method, msgMissingResponseData)
 	assert.True(dOk, msgInvalidResponseType)
 	return dataPortion
+}
+
+// getSysUserAccount returns a system user account
+func getSysUserAccount() models.Account {
+	return moc.Accounts[len(moc.Accounts)-1]
+}
+
+// getNonSysUserAccount returns a non-system user account
+func getNonSysUserAccount() models.Account {
+	return moc.Accounts[0]
+}
+
+// getRecruitUserAccount returns a user account with a recruit profile
+func getRecruitUserAccount() models.Account {
+	return moc.Accounts[0]
+}
+
+// getNonRecruitUserAccount returns a user account without a recruit profile
+func getNonRecruitUserAccount() models.Account {
+	return moc.Accounts[2]
+}
+
+// getPlainUserAccount returns a non-sys user account without a hunter or recruit  profile
+func getPlainUserAccount() models.Account {
+	return moc.Accounts[len(moc.Accounts)-2]
 }
 
 // messages
