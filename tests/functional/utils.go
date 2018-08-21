@@ -7,14 +7,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	config "../../config"
 	db "../../database"
 	moc "../../mocks"
+	models "../../models"
 	route "../../routing"
+	utils "../../utils"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // -------------------------------------------
-// Functional test general helper functions
+// Helper functions
 // -------------------------------------------
 
 // createGqlHandler creates a graphql handler
@@ -68,6 +72,33 @@ func gqlRequestAndRespond(handler http.Handler, query string, variables *map[str
 func createLoadedGqlHandler() http.Handler {
 	crud := moc.NewLoadedCRUD()
 	return createGqlHandler(crud)
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func failOnError(assert *assert.Assertions, err error) {
+	if err != nil {
+		assert.Fail(err.Error())
+	}
+}
+
+func login(crud *db.CRUD, id bson.ObjectId, ua string) (string, string) {
+	accessToken, err := utils.CreateAccessToken(id.Hex(), ua)
+	panicOnError(err)
+
+	// get token mgr
+	rawTokenMgr, err := crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
+	panicOnError(err)
+	tokenManager := models.TransformTokenManager(rawTokenMgr)
+
+	// TODO later when sys implemented,
+	// store token in TokenMgr
+
+	return accessToken, tokenManager.RefreshToken
 }
 
 func assertGqlData(method string, response map[string]interface{}, assert *assert.Assertions) map[string]interface{} {
