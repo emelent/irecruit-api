@@ -162,7 +162,10 @@ func TestRecruitEditorUpdateQAs(t *testing.T) {
 							question_id: "%s",
 							answer: "%s"
 						}
-					)
+					){
+						question
+						answer
+					}
 				}
 			}
 		}
@@ -175,7 +178,16 @@ func TestRecruitEditorUpdateQAs(t *testing.T) {
 	expected := map[string]interface{}{
 		"data": map[string]interface{}{
 			"edit": map[string]interface{}{
-				"updateQAs": "QuestionAnswer(s) successfully updated.",
+				"updateQAs": []interface{}{
+					map[string]interface{}{
+						"question": qa1Question.Question,
+						"answer":   qa1Answer,
+					},
+					map[string]interface{}{
+						"question": qa2Question.Question,
+						"answer":   qa2Answer,
+					},
+				},
 			},
 		},
 	}
