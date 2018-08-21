@@ -1,17 +1,14 @@
 TODO
 	
-	- Put it all in terms of the viewer schema
-	- Code review
 	- make it usable for Recruits first,
 	  with the schemas and resolvers to view and edit
 	  information, and upload, and remove documents.
 		- add update functionality to schemas
+		- AccountEditor
+		- RecruitEditor
 
 
-
-	- Refactor
-	- Refactor predictable resolvers, note the patterns
-	- Refactor predictable tests
+	- Remove unneeded resolvers
 	- Write transformer unit tests
 
 	- move upload stuff to separate microservice
@@ -25,13 +22,24 @@ TODO
 			- Hunter
 
 
-
+	- make it usable for Sys Admins, lastly
+		- create necessary queries & mutations 
+			- SysViewer
+			- SysEditor
 	
+
 	- Things for later on
 		- review issues such as flaky network and sturf
-		
-		- security
-			- start serving from tls
+		- start serving from tls
+
+		- token system
+			- consider firebase auth
+
+			OR
+			- add createdAccessTokens to TokenManager.Tokens
+			- validate that accessToken is in TokenManager.Tokens before
+			  granting access
 			- use key & cert to encode and decode tokens
-			- review the token system and sturf or consider using firebase for free auth
+			- consider user devices and ip address as extra means of security
+
 		
