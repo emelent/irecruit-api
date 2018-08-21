@@ -172,6 +172,80 @@ func (r *RecruitEditorResolver) UpdateRecruit(args struct {
 	return &RecruitResolver{&recruit, r.a}, nil
 }
 
+// UpdateQAs resolves RecruitEditor.UpdateQAs
+func (r *RecruitEditorResolver) UpdateQAs(args struct {
+	Qa1 *qaDetails
+	Qa2 *qaDetails
+}) ([]*QaResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// check that we have at least 1 QA
+	qa1 := args.Qa1
+	qa2 := args.Qa2
+	if qa1 == nil && qa2 == nil {
+		return nil, er.Input("No QAs given.")
+	}
+
+	updates := bson.M{}
+	getQuestion := func(id bson.ObjectId) (*models.Question, error) {
+		rawQ, err := r.crud.FindID(config.QuestionsCollection, id)
+		if err != nil {
+			return nil, err
+		}
+		question := models.TransformQuestion(rawQ)
+		return &question, nil
+	}
+
+	results := make([]*QaResolver, 0)
+	// prepare qa1 update
+	if qa1 != nil {
+		id := string(qa1.QuestionID)
+		if !bson.IsObjectIdHex(id) {
+			return nil, er.InvalidField("qa1.question_id")
+		}
+		question, err := getQuestion(bson.ObjectIdHex(id))
+		if err != nil {
+			return nil, er.InvalidField("qa1.question_id")
+		}
+		qa := models.QA{
+			Question: question.Question,
+			Answer:   qa1.Answer,
+		}
+		updates["qa1"] = qa
+		results = append(results, &QaResolver{&qa})
+
+	}
+
+	// prepare qa2 update
+	if qa2 != nil {
+		id := string(qa2.QuestionID)
+		if !bson.IsObjectIdHex(id) {
+			return nil, er.InvalidField("qa2.question_id")
+		}
+		question, err := getQuestion(bson.ObjectIdHex(id))
+		if err != nil {
+			return nil, er.InvalidField("qa2.question_id")
+		}
+		qa := models.QA{
+			Question: question.Question,
+			Answer:   qa2.Answer,
+		}
+		updates["qa2"] = qa
+		results = append(results, &QaResolver{&qa})
+	}
+
+	if _, err := GenericUpdateByID(
+		r.crud,
+		config.RecruitsCollection,
+		r.r.ID,
+		updates,
+	); err != nil {
+		return nil, er.Generic()
+	}
+
+	return results, nil
+}
+
 // RemoveRecruit resolves "removeRecruit" mutation
 func (r *RecruitEditorResolver) RemoveRecruit() (*string, error) {
 	defer r.crud.CloseCopy()
@@ -432,4 +506,12 @@ type recruitDetails struct {
 	Qa2Question *string
 	Qa2Answer   *string
 	BirthYear   *int32
+}
+
+// -----------------
+// qaDetails struct
+// -----------------
+type qaDetails struct {
+	QuestionID graphql.ID
+	Answer     string
 }
