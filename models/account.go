@@ -9,8 +9,35 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// -----------------
+// Transformer
+// -----------------
+
+// TransformAccount transforms interface to Account model
+func TransformAccount(in interface{}) Account {
+	var account Account
+	switch v := in.(type) {
+	case bson.M:
+		account.ID = v["_id"].(bson.ObjectId)
+		account.Email = v["email"].(string)
+		account.Name = v["name"].(string)
+		account.Surname = v["surname"].(string)
+		account.Password = v["password"].(string)
+		account.AccessLevel = v["access_level"].(int)
+		account.HunterID = v["hunter_id"].(bson.ObjectId)
+		account.RecruitID = v["recruit_id"].(bson.ObjectId)
+	case Account:
+		account = v
+	}
+
+	return account
+}
+
+// -----------------
+// Model
+// -----------------
+
 // Account db model
-// look into excluding the password
 type Account struct {
 	ID bson.ObjectId `json:"id" bson:"_id"`
 

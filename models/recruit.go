@@ -8,23 +8,37 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// QA QuestionAnswer db model
-type QA struct {
-	Question string `json:"question" bson:"question"`
-	Answer   string `json:"answer" bson:"answer"`
+// -----------------
+// Transformer
+// -----------------
+
+// TransformRecruit transforms interface into Recruit model
+func TransformRecruit(in interface{}) Recruit {
+	var recruit Recruit
+	switch v := in.(type) {
+	case bson.M:
+		recruit.ID = v["_id"].(bson.ObjectId)
+		recruit.BirthYear = v["birth_year"].(int32)
+		recruit.Province = v["province"].(string)
+		recruit.City = v["city"].(string)
+		recruit.Gender = v["gender"].(string)
+		recruit.Disability = v["disability"].(string)
+		recruit.Vid1Url = v["vid1_url"].(string)
+		recruit.Vid2Url = v["vid2_url"].(string)
+		recruit.Phone = v["phone"].(string)
+		recruit.Email = v["email"].(string)
+		recruit.Qa1 = TransformQA(v["qa1"])
+		recruit.Qa2 = TransformQA(v["qa2"])
+
+	case Recruit:
+		recruit = v
+	}
+	return recruit
 }
 
-// OK validates QA fields
-func (q *QA) OK() error {
-	if q.Question == "" {
-		return er.InvalidField("question")
-	}
-
-	if q.Answer == "" {
-		return er.InvalidField("answer")
-	}
-	return nil
-}
+// -----------------
+// Model
+// -----------------
 
 // Recruit db model
 type Recruit struct {

@@ -50,7 +50,7 @@ func (r *RootResolver) View(args struct {
 		log.Println("Failed to find account by ID from token =>", err)
 		return nil, er.InvalidToken()
 	}
-	account := TransformAccount(rawAccount)
+	account := models.TransformAccount(rawAccount)
 
 	// func to resolve Viewer as RecruitViewer
 	viewAsRecruit := func() (*ViewerResolver, error) {
@@ -67,7 +67,7 @@ func (r *RootResolver) View(args struct {
 		}
 
 		// return RecruitViewer
-		recruit := TransformRecruit(rawRecruit)
+		recruit := models.TransformRecruit(rawRecruit)
 		viewer := &RecruitViewerResolver{&recruit, &account, r.crud}
 		return &ViewerResolver{viewer}, nil
 	}
@@ -177,7 +177,7 @@ func (r *RecruitViewerResolver) Profile() (*RecruitResolver, error) {
 		log.Println(err)
 		return nil, er.Generic()
 	}
-	account := TransformAccount(rawAccount)
+	account := models.TransformAccount(rawAccount)
 
 	return &RecruitResolver{r.r, &account}, nil
 }
@@ -218,7 +218,7 @@ func (r *RecruitViewerResolver) Profile() (*RecruitResolver, error) {
 // 		log.Println(err)
 // 		return nil, er.GenericError()
 // 	}
-// 	recruit  := TransformRecruit(rawRecruit)
+// 	recruit  := models.TransformRecruit(rawRecruit)
 // 	rawAccount, err := r.crud.FindOne(
 // 		config.AccountsCollection,
 // 		&bson.M{"recruit_id": recruit.ID},
@@ -227,7 +227,7 @@ func (r *RecruitViewerResolver) Profile() (*RecruitResolver, error) {
 // 		log.Println(err)
 // 		return nil, er.GenericError()
 // 	}
-// 	account :=  TransformAccount(rawAccount)
+// 	account :=  models.TransformAccount(rawAccount)
 // 	return &RecruitResolver{&recruit, &account}, nil
 // }
 
@@ -269,7 +269,7 @@ func (r *SysViewerResolver) Accounts() ([]*AccountResolver, error) {
 	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
 	results := make([]*AccountResolver, 0)
 	for _, r := range rawAccounts {
-		account := TransformAccount(r)
+		account := models.TransformAccount(r)
 		results = append(results, &AccountResolver{&account})
 	}
 	return results, err

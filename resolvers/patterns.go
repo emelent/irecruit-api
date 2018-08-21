@@ -6,6 +6,7 @@ import (
 	config "../config"
 	db "../database"
 	er "../errors"
+	models "../models"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -67,7 +68,7 @@ func ResolveRemoveAccount(crud *db.CRUD, id bson.ObjectId) (*string, error) {
 	}
 
 	// delete the account's token manager
-	tokenMgr := TransformTokenManager(rawTokenMgr)
+	tokenMgr := models.TransformTokenManager(rawTokenMgr)
 	err = crud.DeleteID(config.TokenManagersCollection, tokenMgr.ID)
 	if err != nil {
 		log.Println("Failed to delete TokenManager =>", err)

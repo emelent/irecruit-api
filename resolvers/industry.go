@@ -30,7 +30,7 @@ func (r *RootResolver) Industries() ([]*IndustryResolver, error) {
 	// process results
 	results := make([]*IndustryResolver, 0)
 	for _, raw := range rawIndustries {
-		industry := TransformIndustry(raw)
+		industry := models.TransformIndustry(raw)
 		results = append(results, &IndustryResolver{&industry})
 	}
 	return results, err

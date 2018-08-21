@@ -8,6 +8,7 @@ import (
 	config "../config"
 	er "../errors"
 	mware "../middleware"
+	models "../models"
 	utils "../utils"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -25,7 +26,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	if err != nil {
 		return nil, er.InvalidCredentials()
 	}
-	account := TransformAccount(rawAccount)
+	account := models.TransformAccount(rawAccount)
 
 	// check if passwords match
 	if !account.CheckPassword(args.Password) {
@@ -38,7 +39,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.Generic()
 	}
-	tokenMgr := TransformTokenManager(rawTokenMgr)
+	tokenMgr := models.TransformTokenManager(rawTokenMgr)
 
 	// get current refresh token
 	claims, err := utils.GetTokenClaims(tokenMgr.RefreshToken)

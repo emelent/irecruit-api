@@ -29,7 +29,7 @@ func (r *RootResolver) Questions() ([]*QuestionResolver, error) {
 	// process results
 	results := make([]*QuestionResolver, 0)
 	for _, raw := range rawQuestions {
-		question := TransformQuestion(raw)
+		question := models.TransformQuestion(raw)
 		results = append(results, &QuestionResolver{&question})
 	}
 	return results, err
@@ -99,7 +99,7 @@ func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]
 	randomQuestions := make([]*QuestionResolver, 0)
 	rawQuestions = utils.PickRandomN(2, rawQuestions)
 	for _, raw := range rawQuestions {
-		question := TransformQuestion(raw)
+		question := models.TransformQuestion(raw)
 		randomQuestions = append(randomQuestions, &QuestionResolver{&question})
 	}
 

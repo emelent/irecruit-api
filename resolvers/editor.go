@@ -48,7 +48,7 @@ func (r *RootResolver) Edit(args struct {
 		log.Println("Failed to find account by ID from token =>", err)
 		return nil, er.InvalidToken()
 	}
-	account := TransformAccount(rawAccount)
+	account := models.TransformAccount(rawAccount)
 
 	// enforce an enforceable
 	if args.Enforce != nil {
@@ -68,7 +68,7 @@ func (r *RootResolver) Edit(args struct {
 			}
 
 			// return RecruitEditor
-			recruit := TransformRecruit(rawRecruit)
+			recruit := models.TransformRecruit(rawRecruit)
 			Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
 			return &EditorResolver{Editor}, nil
 
@@ -105,7 +105,7 @@ func (r *RootResolver) Edit(args struct {
 			log.Println("Failed to find recruit =>", err)
 			return nil, er.Generic()
 		}
-		recruit := TransformRecruit(rawRecruit)
+		recruit := models.TransformRecruit(rawRecruit)
 		Editor := &RecruitEditorResolver{&recruit, &account, r.crud}
 		return &EditorResolver{Editor}, nil
 	}

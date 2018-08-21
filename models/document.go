@@ -5,6 +5,32 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// -----------------
+// Transformer
+// -----------------
+
+// TransformDocument transforms interface into Document model
+func TransformDocument(in interface{}) Document {
+	var document Document
+	switch v := in.(type) {
+	case bson.M:
+		document.ID = v["_id"].(bson.ObjectId)
+		document.OwnerID = v["owner_id"].(bson.ObjectId)
+		document.URL = v["url"].(string)
+		document.DocType = v["doc_type"].(string)
+		document.OwnerType = v["owner_type"].(string)
+
+	case Document:
+		document = v
+	}
+
+	return document
+}
+
+// -----------------
+// Model
+// -----------------
+
 // Document model
 type Document struct {
 	ID        bson.ObjectId `json:"id" bson:"_id"`

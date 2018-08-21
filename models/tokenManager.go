@@ -4,6 +4,32 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// -----------------
+// Transformer
+// -----------------
+
+// TransformTokenManager transforms interface into TokenManager model
+func TransformTokenManager(in interface{}) TokenManager {
+	var tokenMgr TokenManager
+	switch v := in.(type) {
+	case bson.M:
+		tokenMgr.ID = v["_id"].(bson.ObjectId)
+		tokenMgr.RefreshToken = v["refresh_token"].(string)
+		tokenMgr.MaxTokens = v["max_tokens"].(int)
+		tokenMgr.AccountID = v["account_id"].(bson.ObjectId)
+		tokenMgr.Tokens = v["tokens"].([]string)
+
+	case TokenManager:
+		tokenMgr = v
+	}
+
+	return tokenMgr
+}
+
+// -----------------
+// Model
+// -----------------
+
 // TokenManager model
 type TokenManager struct {
 	ID           bson.ObjectId `json:"id" bson:"_id"`

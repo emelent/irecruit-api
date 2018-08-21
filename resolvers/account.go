@@ -30,7 +30,7 @@ func (r *RootResolver) Accounts() ([]*AccountResolver, error) {
 	// process results
 	results := make([]*AccountResolver, 0)
 	for _, raw := range rawAccounts {
-		account := TransformAccount(raw)
+		account := models.TransformAccount(raw)
 		results = append(results, &AccountResolver{&account})
 	}
 	return results, err

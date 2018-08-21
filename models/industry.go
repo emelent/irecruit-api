@@ -7,6 +7,29 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// -----------------
+// Transformer
+// -----------------
+
+// TransformIndustry transforms interface into Industry model
+func TransformIndustry(in interface{}) Industry {
+	var industry Industry
+	switch v := in.(type) {
+	case bson.M:
+		industry.ID = v["_id"].(bson.ObjectId)
+		industry.Name = v["name"].(string)
+
+	case Industry:
+		industry = v
+	}
+
+	return industry
+}
+
+// -----------------
+// Model
+// -----------------
+
 // Industry model
 type Industry struct {
 	ID   bson.ObjectId `json:"id" bson:"_id"`
