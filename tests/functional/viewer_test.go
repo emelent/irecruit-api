@@ -2,6 +2,7 @@ package functionaltests
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	moc "../../mocks"
@@ -9,7 +10,7 @@ import (
 )
 
 // tests view on SysViewer
-func TestViewSysViewerValid(t *testing.T) {
+func TestViewSysViewer(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 	assert := assert.New(t)
@@ -79,7 +80,7 @@ func TestViewWithInvalidToken(t *testing.T) {
 }
 
 // tests view on RecruitViewer
-func TestViewRecruitViewerValid(t *testing.T) {
+func TestViewRecruitViewer(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 	assert := assert.New(t)
@@ -125,7 +126,7 @@ func TestViewRecruitViewerValid(t *testing.T) {
 }
 
 // tests view on AccountViewer
-func TestViewAccountViewerValid(t *testing.T) {
+func TestViewAccountViewer(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
 	assert := assert.New(t)
@@ -156,6 +157,48 @@ func TestViewAccountViewerValid(t *testing.T) {
 				"is_hunter":     false,
 				"is_recruit":    false,
 				"checkPassword": true,
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResult)
+}
+
+// tests view on Viewer
+func TestViewViewer(t *testing.T) {
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+	assert := assert.New(t)
+
+	// login with plain account
+	account := getPlainUserAccount()
+	token, _ := login(crud, account.ID, "none")
+	// prepare query
+	query := fmt.Sprintf(`
+		query{
+			view(token: "%s"){
+				... on Viewer{
+					id
+					name
+					surname
+					email
+				}
+			}
+		}
+	`, token)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"view": map[string]interface{}{
+				"id":      account.ID.Hex(),
+				"name":    account.Name,
+				"surname": account.Surname,
+				"email":   strings.ToLower(account.Email),
 			},
 		},
 	}
