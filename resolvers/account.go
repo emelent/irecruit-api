@@ -40,14 +40,28 @@ func (r *RootResolver) Accounts() ([]*AccountResolver, error) {
 func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*TokensResolver, error) {
 	defer r.crud.CloseCopy()
 
+	// check that we have all we need
+	info := args.Info
+	if info.Email == nil {
+		return nil, er.MissingField("info.email")
+	}
+	if info.Password == nil {
+		return nil, er.MissingField("info.password")
+	}
+	if info.Name == nil {
+		return nil, er.MissingField("info.name")
+	}
+	if info.Surname == nil {
+		return nil, er.MissingField("info.surname")
+	}
+
 	// create account
 	account := models.Account{}
-	info := args.Info
-	account.Name = info.Name
-	account.Email = info.Email
-	account.Surname = info.Surname
+	account.Email = *info.Email
+	account.Name = *info.Name
+	account.Surname = *info.Surname
+	account.Password = *info.Password
 	account.AccessLevel = 0
-	account.Password = info.Password
 	account.ID = bson.NewObjectId()
 	account.HunterID = models.NullObjectID
 	account.RecruitID = models.NullObjectID
@@ -108,10 +122,10 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 // accountDetails struct
 // -----------------
 type accountDetails struct {
-	Email    string
-	Password string
-	Name     string
-	Surname  string
+	Email    *string
+	Password *string
+	Name     *string
+	Surname  *string
 }
 
 // -----------------

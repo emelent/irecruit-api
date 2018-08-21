@@ -18,10 +18,10 @@ var AccountSchema = Schema{
 		}
 		
 		input AccountDetails{
-			email: String!
-			password: String!
-			name: String!
-			surname: String!
+			email: String
+			password: String
+			name: String
+			surname: String
 		}
 
 
