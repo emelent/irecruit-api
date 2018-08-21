@@ -17,7 +17,7 @@ func IsSysAccount(account *models.Account) bool {
 
 // IsNullID checks if given id references a "null" id
 func IsNullID(id bson.ObjectId) bool {
-	return id == models.NullObjectID
+	return id == models.NullObjectID || id == ""
 }
 
 // PickRandomN create a random subset of length n from input slice
