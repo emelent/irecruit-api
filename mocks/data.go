@@ -5,7 +5,23 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// Contains all mock data
+/*
+Contains all mock data
+
+WARNING:
+
+The data is arranged in a some-what specific way,
+in order to make some logical assumptions about
+the"connections" between the data within the loaders,
+so moving things around could break tests and may
+lead to unpredictable behaviour.
+
+So, again, the structure of this data represents a specific
+possible use case of the database.
+
+DO NOT MOVE THE DATA AROUND UNLESS YOU UNDERSTAND
+WHY IT IS WHERE IT IS.
+*/
 
 // HunterIDs 3 hunter IDs
 var HunterIDs = []bson.ObjectId{
