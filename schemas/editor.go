@@ -19,7 +19,7 @@ var EditorSchema = Schema{
 		type RecruitEditor{
 			removeRecruit: String
 			updateRecruit(info: RecruitDetails): Recruit
-			updateQAs(qa1: QaDetails, qa2: QaDetails): String
+			updateQAs(qa1: QaDetails, qa2: QaDetails): [QA]!
 		}
 		
 		type SysEditor{
