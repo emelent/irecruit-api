@@ -22,12 +22,6 @@ func (r *RootResolver) View(args struct {
 	Enforce *string
 }) (*ViewerResolver, error) {
 
-	// Did we get a token?
-	if args.Token == "" {
-		// return a guest viewer
-		return nil, er.MissingField("token")
-	}
-
 	// get token claims
 	claims, err := utils.GetTokenClaims(args.Token)
 	if err != nil {
@@ -56,7 +50,7 @@ func (r *RootResolver) View(args struct {
 	viewAsRecruit := func() (*ViewerResolver, error) {
 		// check if account has recruit profile
 		if utils.IsNullID(account.RecruitID) {
-			return nil, er.Input("Failed to enfore 'RECRUIT'.")
+			return nil, er.Input("Failed to enforce 'RECRUIT'.")
 		}
 
 		// retrieve Recruit profile
@@ -76,7 +70,7 @@ func (r *RootResolver) View(args struct {
 	viewAsSys := func() (*ViewerResolver, error) {
 		// check if account is sys account
 		if !utils.IsSysAccount(&account) {
-			return nil, er.Input("Failed to enfore 'SYSTEM'.")
+			return nil, er.Input("Failed to enforce 'SYSTEM'.")
 		}
 
 		// return sysViewer
@@ -86,13 +80,8 @@ func (r *RootResolver) View(args struct {
 
 	//func to resolve Viewer as AccountViewer
 	viewAsAccount := func() (*ViewerResolver, error) {
-		// check if account is sys account
-		if !utils.IsSysAccount(&account) {
-			return nil, er.Input("Failed to enfore 'SYSTEM'.")
-		}
-
-		// return sysViewer
-		viewer := &SysViewerResolver{&account, r.crud}
+		// return accountViewer
+		viewer := &AccountViewerResolver{&account}
 		return &ViewerResolver{viewer}, nil
 	}
 
