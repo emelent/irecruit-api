@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	moc "../../mocks"
 	"github.com/stretchr/testify/assert"
@@ -296,4 +297,185 @@ func TestViewEnforceInvalid(t *testing.T) {
 		failOnError(assert, err)
 		assert.Contains(response, "errors", fmt.Sprintf("Case [%v]: %s", i+1, msgNoError))
 	}
+}
+
+// tests that SysViewer.Recruits lists all recruits
+func TestViewRecruitList(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys user
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		query {
+			view(token: "%s"){
+				... on SysViewer{
+					recruits{
+						id,
+						email,
+						phone,
+						email
+						province,
+						city,
+						disability,
+						gender,
+						vid1_url,
+						vid2_url,
+						age,
+						qa1{
+							question
+							answer
+						},
+						qa2{
+							question
+							answer
+						}
+
+					}
+				}
+			}
+		}
+	`, token)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prepare expected
+	year := int32(time.Now().Year())
+	recruits := make([]interface{}, 0)
+	for _, r := range moc.Recruits {
+		recruits = append(recruits, map[string]interface{}{
+			"id":         r.ID.Hex(),
+			"email":      r.Email,
+			"phone":      r.Phone,
+			"province":   r.Province,
+			"city":       r.City,
+			"gender":     r.Gender,
+			"disability": r.Disability,
+			"vid1_url":   r.Vid1Url,
+			"vid2_url":   r.Vid2Url,
+			"age":        float64(year - r.BirthYear),
+			"qa1": map[string]interface{}{
+				"question": r.Qa1.Question,
+				"answer":   r.Qa1.Answer,
+			},
+			"qa2": map[string]interface{}{
+				"question": r.Qa2.Question,
+				"answer":   r.Qa2.Answer,
+			},
+		})
+	}
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"view": map[string]interface{}{
+				"recruits": recruits,
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResult)
+}
+
+// tests that SysViewer.Questions lists all questions
+func TestViewQuestionList(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys user
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		query{
+			view(token: "%s"){
+				... on SysViewer{
+					questions{
+						id
+						industry_id
+						question
+					}
+				}
+			}
+		}
+	`, token)
+
+	// request it
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prepare expected
+	questions := make([]interface{}, 0)
+	for _, question := range moc.Questions {
+		questions = append(questions, map[string]interface{}{
+			"id":          question.ID.Hex(),
+			"industry_id": question.IndustryID.Hex(),
+			"question":    question.Question,
+		})
+	}
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"view": map[string]interface{}{
+				"questions": questions,
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResult)
+}
+
+// tests that SysViewer.Documents lists all documents
+func TestViewDocumentsLists(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		query{
+			view(token: "%s"){
+				... on SysViewer{
+					documents{
+						id
+						url
+						doc_type
+						owner_type
+						owner_id
+					}
+				}
+			}
+		}
+	`, token)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prepare expected
+	documents := make([]interface{}, 0)
+	for _, doc := range moc.Documents {
+		documents = append(documents, map[string]interface{}{
+			"id":         doc.ID.Hex(),
+			"owner_id":   doc.OwnerID.Hex(),
+			"owner_type": doc.OwnerType,
+			"doc_type":   doc.DocType,
+			"url":        doc.URL,
+		})
+	}
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"view": map[string]interface{}{
+				"documents": documents,
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
 }
