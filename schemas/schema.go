@@ -11,13 +11,6 @@ type Schema struct {
 	Mutations string
 }
 
-// These are type definitions for interfaces and other type abstractions
-var intermediateTypes = `
-	type Fail {
-		error: String!
-	}
-`
-
 // DefaultSchemas is a list of all necessary schemas
 var DefaultSchemas = []Schema{
 	PublicSchema,
@@ -53,8 +46,6 @@ func CreateSchema(schemas ...Schema) string {
 		}
 
 		%s
-
-		%s
-	`, queries, mutations, intermediateTypes, types)
+	`, queries, mutations, types)
 	return schema
 }
