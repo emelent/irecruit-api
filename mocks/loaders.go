@@ -49,6 +49,7 @@ func LoadAccounts(crud *db.CRUD) {
 
 		// hash password before insertion
 		acc.HashPassword()
+		Accounts[i] = acc
 		crud.Insert(config.AccountsCollection, acc)
 	}
 }
@@ -72,6 +73,7 @@ func LoadTokenManagers(crud *db.CRUD) {
 			break
 		}
 
+		TokenManagers[i] = mgr
 		crud.Insert(config.TokenManagersCollection, mgr)
 	}
 }
@@ -84,6 +86,7 @@ func LoadRecruits(crud *db.CRUD) {
 			fmt.Printf("Mock recruits[%v] : %s", i, err.Error())
 			break
 		}
+		Recruits[i] = rec
 		crud.Insert(config.RecruitsCollection, rec)
 	}
 }
@@ -96,6 +99,8 @@ func LoadIndustries(crud *db.CRUD) {
 			fmt.Printf("Mock industries[%v] : %s", i, err.Error())
 			break
 		}
+
+		Industries[i] = industry
 		crud.Insert(config.IndustriesCollection, industry)
 	}
 }
@@ -111,6 +116,7 @@ func LoadQuestions(crud *db.CRUD) {
 			break
 		}
 
+		Questions[i] = q
 		crud.Insert(config.QuestionsCollection, q)
 	}
 }
@@ -126,6 +132,7 @@ func LoadDocuments(crud *db.CRUD) {
 			break
 		}
 
+		Documents[i] = doc
 		crud.Insert(config.DocumentsCollection, doc)
 	}
 }
