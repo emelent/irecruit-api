@@ -96,6 +96,6 @@ func (r *Recruit) OK() error {
 		return er.InvalidField("birth_year")
 	}
 
-	r.Gender = strings.ToLower(r.Gender)
+	r.Gender = strings.ToUpper(r.Gender)
 	return nil
 }
