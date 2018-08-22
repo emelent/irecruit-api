@@ -42,9 +42,9 @@ func TestCrudFindAll(t *testing.T) {
 	crud := loadedCRUD()
 
 	// prepare results
-	r1, _ := crud.FindAll(collection, nil)                          // expect all
-	r2, _ := crud.FindAll(collection, &bson.M{"Food": "Ice-Cream"}) // expect some
-	r3, _ := crud.FindAll(collection, &bson.M{"Name": "Jake"})      // expect none
+	r1, _ := crud.FindAll(collection, nil)                         // expect all
+	r2, _ := crud.FindAll(collection, bson.M{"Food": "Ice-Cream"}) // expect some
+	r3, _ := crud.FindAll(collection, bson.M{"Name": "Jake"})      // expect none
 
 	// make assertions
 	assert := assert.New(t)
@@ -58,9 +58,9 @@ func TestCrudFindOne(t *testing.T) {
 	p0 := bson.M(structs.Map(people[0]))
 
 	// prepare results
-	i1, _ := crud.FindOne(collection, nil)                          // expect one
-	i2, _ := crud.FindOne(collection, &bson.M{"Food": "Ice-Cream"}) // expect one
-	r3, err := crud.FindOne(collection, &bson.M{"Name": "Jake"})    // expect none
+	i1, _ := crud.FindOne(collection, nil)                         // expect one
+	i2, _ := crud.FindOne(collection, bson.M{"Food": "Ice-Cream"}) // expect one
+	r3, err := crud.FindOne(collection, bson.M{"Name": "Jake"})    // expect none
 
 	r1 := i1.(bson.M)
 	r2 := i2.(bson.M)
@@ -97,7 +97,7 @@ func TestCrudUpdateID(t *testing.T) {
 
 	// prepare results
 	crud.UpdateID(collection, p0.ID, bson.M{"Name": newName})
-	i1, _ := crud.FindOne(collection, &bson.M{"_id": p0.ID})
+	i1, _ := crud.FindOne(collection, bson.M{"_id": p0.ID})
 	r1 := i1.(bson.M)
 	err := crud.UpdateID(collection, bson.NewObjectId(), bson.M{})
 
@@ -115,9 +115,9 @@ func TestCrudDeleteID(t *testing.T) {
 	p0 := people[0].(person)
 
 	// prepare results
-	b1, _ := crud.FindOne(collection, &bson.M{"_id": p0.ID})
+	b1, _ := crud.FindOne(collection, bson.M{"_id": p0.ID})
 	crud.DeleteID(collection, p0.ID)
-	r1, _ := crud.FindOne(collection, &bson.M{"_id": p0.ID})
+	r1, _ := crud.FindOne(collection, bson.M{"_id": p0.ID})
 	err := crud.DeleteID(collection, bson.NewObjectId())
 
 	// make asserts
