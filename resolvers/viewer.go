@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"log"
+	"time"
 
 	config "../config"
 	db "../database"
@@ -333,4 +334,104 @@ func (r *ViewerResolver) ToSysViewer() (*SysViewerResolver, bool) {
 func (r *ViewerResolver) ToAccountViewer() (*AccountViewerResolver, bool) {
 	v, ok := r.viewer.(*AccountViewerResolver)
 	return v, ok
+}
+
+// -----------------
+// QaResolver struct
+// -----------------
+
+// QaResolver resolve Qa
+type QaResolver struct {
+	qa *models.QA
+}
+
+// Question resolves Qa.Question
+func (r *QaResolver) Question() string {
+	return r.qa.Question
+}
+
+// Answer resolves Qa.Answer
+func (r *QaResolver) Answer() string {
+	return r.qa.Answer
+}
+
+// -----------------
+// RecruitResolver struct
+// -----------------
+
+// RecruitResolver resolves Recruit
+type RecruitResolver struct {
+	r *models.Recruit
+	a *models.Account
+}
+
+// ID resolves Recruit.ID
+func (r *RecruitResolver) ID() graphql.ID {
+	return graphql.ID(r.r.ID.Hex())
+}
+
+// Age resolves Recruit.Age
+func (r *RecruitResolver) Age() int32 {
+	year := int32(time.Now().Year())
+	return year - r.r.BirthYear
+}
+
+// Name resolves Recruit.Name
+func (r *RecruitResolver) Name() string {
+	return r.a.Name
+}
+
+// Surname resolves Recruit.Surname
+func (r *RecruitResolver) Surname() string {
+	return r.a.Surname
+}
+
+// Phone resolves Recruit.Phone
+func (r *RecruitResolver) Phone() string {
+	return r.r.Phone
+}
+
+// Email resolves Recruit.Email
+func (r *RecruitResolver) Email() string {
+	return r.r.Email
+}
+
+// Province resolves Recruit.Province
+func (r *RecruitResolver) Province() string {
+	return r.r.Province
+}
+
+// City resolves Recruit.City
+func (r *RecruitResolver) City() string {
+	return r.r.City
+}
+
+// Gender resolves Recruit.Gender
+func (r *RecruitResolver) Gender() string {
+	return r.r.Gender
+}
+
+// Disability resolves Recruit.Disability
+func (r *RecruitResolver) Disability() string {
+	return r.r.Disability
+}
+
+// Vid1Url resolves Recruit.Vid1Url
+func (r *RecruitResolver) Vid1Url() string {
+	return r.r.Vid1Url
+}
+
+// Vid2Url resolves Recruit.Vid2Url
+func (r *RecruitResolver) Vid2Url() string {
+	return r.r.Vid2Url
+}
+
+// Qa1 resolves Recruit.Qa1
+func (r *RecruitResolver) Qa1() *QaResolver {
+	return &QaResolver{&r.r.Qa1}
+}
+
+// Qa2 resolves Recruit.Qa2
+func (r *RecruitResolver) Qa2() *QaResolver {
+	return &QaResolver{&r.r.Qa2}
 }
