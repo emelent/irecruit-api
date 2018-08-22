@@ -1,7 +1,7 @@
 package schemas
 
-// AccountSchema schema
-var AccountSchema = Schema{
+// PublicSchema public graphql queries
+var PublicSchema = Schema{
 	Types: `
 		type Account {
 			id: ID!
@@ -24,11 +24,17 @@ var AccountSchema = Schema{
 			surname: String
 		}
 
-
+		type Industry{
+			id: ID!
+			name: String!
+		}
 	`,
 	Queries: `
+		industries:[Industry]!
 	`,
 	Mutations: `
 		createAccount(info: AccountDetails!): Tokens
+		login(email: String!, password: String!): Tokens
+		#logout(token: String!): String!
 	`,
 }
