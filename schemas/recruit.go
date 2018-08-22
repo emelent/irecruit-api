@@ -62,11 +62,7 @@ var RecruitSchema = Schema{
 	`,
 
 	Queries: `
-		recruits: [Recruit]!
 	`,
 	Mutations: `
-		createRecruit(account_id: ID!, info: RecruitDetails!): Recruit
-		removeRecruit(id: ID!): String
-
 	`,
 }
