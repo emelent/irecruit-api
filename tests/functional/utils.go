@@ -94,7 +94,7 @@ func login(crud *db.CRUD, id bson.ObjectId, ua string) (string, string) {
 	panicOnError(err)
 
 	// get token mgr
-	rawTokenMgr, err := crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
+	rawTokenMgr, err := crud.FindOne(config.TokenManagersCollection, bson.M{"account_id": id})
 	panicOnError(err)
 	tokenManager := models.TransformTokenManager(rawTokenMgr)
 
@@ -117,27 +117,57 @@ func assertGqlData(method string, response map[string]interface{}, assert *asser
 
 // getSysUserAccount returns a system user account
 func getSysUserAccount() models.Account {
-	return moc.Accounts[len(moc.Accounts)-1]
+	var account models.Account
+	for _, acc := range moc.Accounts {
+		if utils.IsSysAccount(&acc) {
+			return acc
+		}
+	}
+	return account
 }
 
 // getNonSysUserAccount returns a non-system user account
 func getNonSysUserAccount() models.Account {
-	return moc.Accounts[0]
+	var account models.Account
+	for _, acc := range moc.Accounts {
+		if !utils.IsSysAccount(&acc) {
+			return acc
+		}
+	}
+	return account
 }
 
 // getRecruitUserAccount returns a user account with a recruit profile
 func getRecruitUserAccount() models.Account {
-	return moc.Accounts[0]
+	var account models.Account
+	for _, acc := range moc.Accounts {
+		if !utils.IsNullID(acc.RecruitID) {
+			return acc
+		}
+	}
+	return account
 }
 
 // getNonRecruitUserAccount returns a user account without a recruit profile
 func getNonRecruitUserAccount() models.Account {
-	return moc.Accounts[2]
+	var account models.Account
+	for _, acc := range moc.Accounts {
+		if utils.IsNullID(acc.RecruitID) {
+			return acc
+		}
+	}
+	return account
 }
 
 // getPlainUserAccount returns a non-sys user account without a hunter or recruit  profile
 func getPlainUserAccount() models.Account {
-	return moc.Accounts[len(moc.Accounts)-2]
+	var account models.Account
+	for _, acc := range moc.Accounts {
+		if utils.IsNullID(acc.RecruitID) && utils.IsNullID(acc.HunterID) && !utils.IsSysAccount(&acc) {
+			return acc
+		}
+	}
+	return account
 }
 
 // messages
