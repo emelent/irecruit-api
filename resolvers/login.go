@@ -22,7 +22,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	defer r.crud.CloseCopy()
 
 	// find account by email
-	rawAccount, err := r.crud.FindOne(config.AccountsCollection, &bson.M{"email": args.Email})
+	rawAccount, err := r.crud.FindOne(config.AccountsCollection, bson.M{"email": args.Email})
 	if err != nil {
 		return nil, er.InvalidCredentials()
 	}
@@ -34,7 +34,7 @@ func (r *RootResolver) Login(ctx context.Context, args struct{ Email, Password s
 	}
 
 	// get account's tokenManager
-	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": account.ID})
+	rawTokenMgr, err := r.crud.FindOne(config.TokenManagersCollection, bson.M{"account_id": account.ID})
 	if err != nil {
 		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.Generic()

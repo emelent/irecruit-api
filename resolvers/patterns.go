@@ -55,7 +55,7 @@ func ResolveRemoveAccount(crud *db.CRUD, id bson.ObjectId) (*string, error) {
 	}
 
 	// find the account's token manager
-	rawTokenMgr, err := crud.FindOne(config.TokenManagersCollection, &bson.M{"account_id": id})
+	rawTokenMgr, err := crud.FindOne(config.TokenManagersCollection, bson.M{"account_id": id})
 	if err != nil {
 		log.Println("Failed to find TokenManager =>", err)
 		return nil, er.Generic()

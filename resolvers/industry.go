@@ -41,7 +41,7 @@ func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryReso
 	defer r.crud.CloseCopy()
 
 	// check that the name does not already exist
-	if _, err := r.crud.FindOne(config.IndustriesCollection, &bson.M{
+	if _, err := r.crud.FindOne(config.IndustriesCollection, bson.M{
 		"name": strings.ToLower(args.Name),
 	}); err == nil {
 		return nil, er.Input("An industry by that name already exists.")

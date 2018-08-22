@@ -89,7 +89,7 @@ func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]
 	}
 
 	// get industries
-	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, &bson.M{"industry_id": bson.ObjectIdHex(id)})
+	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, bson.M{"industry_id": bson.ObjectIdHex(id)})
 	if err != nil {
 		log.Println(err)
 		return nil, er.Generic()
