@@ -50,7 +50,7 @@ func (db *CRUD) Insert(collection string, values ...interface{}) error {
 }
 
 //FindAll  finds all matching db entries
-func (db *CRUD) FindAll(collection string, query *bson.M) ([]interface{}, error) {
+func (db *CRUD) FindAll(collection string, query bson.M) ([]interface{}, error) {
 	if db.Session == nil { // a.k.a, we're in the mock
 
 		// check if collection exists
@@ -69,7 +69,7 @@ func (db *CRUD) FindAll(collection string, query *bson.M) ([]interface{}, error)
 }
 
 //FindOne finds a db entry
-func (db *CRUD) FindOne(collection string, query *bson.M) (interface{}, error) {
+func (db *CRUD) FindOne(collection string, query bson.M) (interface{}, error) {
 	if db.Session == nil { // in the mock
 
 		// check if collection exists
@@ -227,15 +227,15 @@ func matchID(id interface{}) func(bson.M) bool {
 	}
 }
 
-func matchQuery(query *bson.M) func(bson.M) bool {
-	if query == nil {
+func matchQuery(query bson.M) func(bson.M) bool {
+	if len(query) == 0 {
 		return func(m bson.M) bool {
 			return true
 		}
 	}
 
 	return func(m bson.M) bool {
-		for k, v := range *query {
+		for k, v := range query {
 			if m[k] != v {
 				return false
 			}
