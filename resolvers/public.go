@@ -17,25 +17,6 @@ import (
 // Root Resolver methods
 // -----------------
 
-// Accounts resolves accounts(name: String) query
-func (r *RootResolver) Accounts() ([]*AccountResolver, error) {
-	defer r.crud.CloseCopy()
-	// get accounts
-	rawAccounts, err := r.crud.FindAll(config.AccountsCollection, nil)
-	if err != nil {
-		log.Println(err)
-		return nil, er.Generic()
-	}
-
-	// process results
-	results := make([]*AccountResolver, 0)
-	for _, raw := range rawAccounts {
-		account := models.TransformAccount(raw)
-		results = append(results, &AccountResolver{&account})
-	}
-	return results, err
-}
-
 // CreateAccount resolves the query of the same name
 func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *accountDetails }) (*TokensResolver, error) {
 	defer r.crud.CloseCopy()
