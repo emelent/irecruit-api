@@ -1,34 +1,51 @@
 TODO
-	
-	- make it usable for Recruits first,
-	  with the schemas and resolvers to view and edit
-	  information, and upload, and remove documents.
-		- add update functionality to schemas
-		- AccountEditor
-		- RecruitEditor
 
+	- Move creators into Edit.SysEditor
+
+	- make it usable for Sys Admins
+	- create necessary  mutations 
+		- SysEditor
 
 	- Remove unneeded resolvers
 	- Write transformer unit tests
 
+
 	- move upload stuff to separate microservice
-		- upload iframe with progress report
-		- also add csrf token
+		- upload & remove documents
+			- fs server removes file then makes
+			  a request for document removal on behalf
+			  of the current user, using auth token, to
+			  the graphql api.
+
+		- later look into
+			- upload iframe with progress report
+			- also add csrf token
 
 
-	- make it usable for Hunters, secondly
+
+	- make it usable for Hunters
 		- create models
 			- Company
 			- Hunter
-
-
-	- make it usable for Sys Admins, lastly
-		- create necessary queries & mutations 
-			- SysViewer
-			- SysEditor
 	
 
 	- Things for later on
+
+		- Cascading Deletes
+			- removing an account means removing related
+				recruit profile  and related documents
+			- removing a recruit profile needs all related 
+				recruit info, like Documents to be deleted
+
+
+			- Either perform cascading deletes 
+
+				OR
+
+			- Have a CRON job that periodically removes 
+			  non-refrenced documents, i.e. cleaning the 
+			  db
+		
 		- review issues such as flaky network and sturf
 		- start serving from tls
 
