@@ -265,6 +265,69 @@ func (r *SysViewerResolver) Accounts() ([]*AccountResolver, error) {
 	return results, err
 }
 
+// Recruits resolves SysViewer.Recruits which returns a list of all the recruits
+func (r *SysViewerResolver) Recruits() ([]*RecruitResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// fetch all recruits
+	rawRecruits, err := r.crud.FindAll(config.RecruitsCollection, nil)
+	if err != nil {
+		return nil, er.Generic()
+	}
+
+	// process results
+	results := make([]*RecruitResolver, 0)
+	for _, raw := range rawRecruits {
+		recruit := models.TransformRecruit(raw)
+		results = append(results, &RecruitResolver{&recruit, r.a})
+	}
+
+	// return results
+	return results, nil
+}
+
+// Questions resolves SysViewer.Questions which returns a list of all the questions
+func (r *SysViewerResolver) Questions() ([]*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// fetch all recruits
+	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, nil)
+	if err != nil {
+		return nil, er.Generic()
+	}
+
+	// process results
+	results := make([]*QuestionResolver, 0)
+	for _, raw := range rawQuestions {
+		question := models.TransformQuestion(raw)
+		results = append(results, &QuestionResolver{&question})
+	}
+
+	// return results
+	return results, nil
+}
+
+// Documents resolves SysViewer.Documents which returns a list of all the documents
+func (r *SysViewerResolver) Documents() ([]*DocumentResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// fetch all documents
+	rawDocuments, err := r.crud.FindAll(config.DocumentsCollection, nil)
+	if err != nil {
+		return nil, er.Generic()
+	}
+
+	// process results
+	results := make([]*DocumentResolver, 0)
+	for _, raw := range rawDocuments {
+		document := models.TransformDocument(raw)
+		results = append(results, &DocumentResolver{&document})
+	}
+
+	// return results
+	return results, nil
+}
+
 // -----------------
 // AccountViewerResolver struct
 // -----------------
