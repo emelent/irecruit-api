@@ -415,6 +415,38 @@ func (r *SysEditorResolver) CreateIndustry(args struct{ Name string }) (*Industr
 	return &IndustryResolver{&industry}, nil
 }
 
+// UpdateIndustry resolves SysEditor.UpdateIndustry
+func (r *SysEditorResolver) UpdateIndustry(args struct {
+	ID   graphql.ID
+	Name string
+}) (*IndustryResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+	bid := bson.ObjectIdHex(id)
+
+	// run update
+	if err := r.crud.UpdateID(config.IndustriesCollection, bid, bson.M{
+		"name": args.Name,
+	}); err != nil {
+		return nil, er.Generic()
+	}
+
+	// get updated industry
+	rawIndustry, err := r.crud.FindID(config.IndustriesCollection, bid)
+	if err != nil {
+		return nil, er.Generic()
+	}
+	industry := models.TransformIndustry(rawIndustry)
+
+	// return industry
+	return &IndustryResolver{&industry}, nil
+}
+
 // -----------------
 // AccountEditorResolver struct
 // -----------------
