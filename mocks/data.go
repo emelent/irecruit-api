@@ -96,7 +96,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "mark@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Mark",
 		Surname:     "Smith",
 		AccessLevel: 0,
@@ -104,7 +103,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jdoe@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "John",
 		Surname:     "Doe",
 		AccessLevel: 0,
@@ -112,7 +110,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "lisa@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Lisa",
 		Surname:     "Smith",
 		AccessLevel: 0,
@@ -120,7 +117,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "erin@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Erin",
 		Surname:     "Lona",
 		AccessLevel: 0,
@@ -128,7 +124,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jake@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Jake",
 		Surname:     "Tinder",
 		AccessLevel: 0,
@@ -136,7 +131,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "moti@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Morlin",
 		Surname:     "Tinder",
 		AccessLevel: 0,
@@ -144,7 +138,6 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "thato@gmail.com",
-		Password:    DefaultPassword,
 		Name:        "Thato",
 		Surname:     "Mopani",
 		AccessLevel: 9, // system admin

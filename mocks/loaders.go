@@ -41,6 +41,8 @@ func LoadAccounts(crud *db.CRUD) {
 			acc.HunterID = HunterIDs[numHunters]
 			acc.RecruitID = Recruits[numRecruits].ID
 		}
+		//  set password to default
+		acc.Password = DefaultPassword
 		// validate before insertion
 		if err := acc.OK(); err != nil {
 			fmt.Printf("Mock accounts[%v] : %s", i, err.Error())
