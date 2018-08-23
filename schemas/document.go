@@ -31,6 +31,5 @@ var DocumentSchema = Schema{
 			owner_type: OwnerType!,
 			owner_id:ID!
 		): Document
-		removeDocument(id: ID!): String
 	`,
 }
