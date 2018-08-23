@@ -649,3 +649,48 @@ func TestSysEditor_CreateIndustry(t *testing.T) {
 
 	assert.Equal(expected, response, msgInvalidResponse)
 }
+
+func TestSysEditor_UpdateIndustry(t *testing.T) {
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+	assert := assert.New(t)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prep data
+	name := "schwartz"
+	industryID := moc.Industries[0].ID.Hex()
+
+	// prep query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					updateIndustry(id: "%s", name: "%s"){
+						id
+						name
+					}
+				}
+			}
+		}
+	`, token, industryID, name)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prepare expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"updateIndustry": map[string]interface{}{
+					"id":   industryID,
+					"name": name,
+				},
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
