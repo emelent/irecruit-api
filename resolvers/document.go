@@ -1,8 +1,6 @@
 package resolvers
 
 import (
-	"log"
-
 	config "../config"
 	er "../errors"
 	models "../models"
@@ -13,25 +11,6 @@ import (
 // -----------------
 // Root Resolver methods
 // -----------------
-
-// Documents resolves "documents" gql query
-func (r *RootResolver) Documents() ([]*DocumentResolver, error) {
-	defer r.crud.CloseCopy()
-	// get documents
-	rawDocuments, err := r.crud.FindAll(config.DocumentsCollection, nil)
-	if err != nil {
-		log.Println(err)
-		return nil, er.Generic()
-	}
-
-	// process results
-	results := make([]*DocumentResolver, 0)
-	for _, raw := range rawDocuments {
-		document := models.TransformDocument(raw)
-		results = append(results, &DocumentResolver{&document})
-	}
-	return results, err
-}
 
 // CreateDocument resolves "createDocument"  gql mutation
 func (r *RootResolver) CreateDocument(args struct {

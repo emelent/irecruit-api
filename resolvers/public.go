@@ -99,6 +99,55 @@ func (r *RootResolver) CreateAccount(ctx context.Context, args struct{ Info *acc
 	return &TokensResolver{refresh: refresh, access: access}, nil
 }
 
+// RandomQuestions resolves "randomQuestions" gql query
+func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// check that the ID is valid
+	id := string(args.IndustryID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+
+	// get industries
+	rawQuestions, err := r.crud.FindAll(config.QuestionsCollection, bson.M{"industry_id": bson.ObjectIdHex(id)})
+	if err != nil {
+		log.Println(err)
+		return nil, er.Generic()
+	}
+
+	// process results
+	randomQuestions := make([]*QuestionResolver, 0)
+	rawQuestions = utils.PickRandomN(2, rawQuestions)
+	for _, raw := range rawQuestions {
+		question := models.TransformQuestion(raw)
+		randomQuestions = append(randomQuestions, &QuestionResolver{&question})
+	}
+
+	// return randomQuestions
+	return randomQuestions, err
+}
+
+// Industries resolves "industries" gql query
+func (r *RootResolver) Industries() ([]*IndustryResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// get industries
+	rawIndustries, err := r.crud.FindAll(config.IndustriesCollection, nil)
+	if err != nil {
+		log.Println(err)
+		return nil, er.Generic()
+	}
+
+	// process results
+	results := make([]*IndustryResolver, 0)
+	for _, raw := range rawIndustries {
+		industry := models.TransformIndustry(raw)
+		results = append(results, &IndustryResolver{&industry})
+	}
+	return results, err
+}
+
 // -----------------
 // accountDetails struct
 // -----------------
@@ -178,4 +227,47 @@ func (r *TokensResolver) AccessToken() string {
 // RefreshToken resolves Token.AccessToken
 func (r *TokensResolver) RefreshToken() string {
 	return r.refresh
+}
+
+// -----------------
+// QuestionResolver struct
+// -----------------
+
+// QuestionResolver resolves Question
+type QuestionResolver struct {
+	q *models.Question
+}
+
+// ID resolves Question.ID
+func (r *QuestionResolver) ID() graphql.ID {
+	return graphql.ID(r.q.ID.Hex())
+}
+
+// IndustryID resolves Question.IndustryID
+func (r *QuestionResolver) IndustryID() graphql.ID {
+	return graphql.ID(r.q.IndustryID.Hex())
+}
+
+// Question resolves Question.Question
+func (r *QuestionResolver) Question() string {
+	return r.q.Question
+}
+
+// -----------------
+// IndustryResolver struct
+// -----------------
+
+// IndustryResolver resolves Industry
+type IndustryResolver struct {
+	i *models.Industry
+}
+
+// ID resolves Industry.ID
+func (r *IndustryResolver) ID() graphql.ID {
+	return graphql.ID(r.i.ID.Hex())
+}
+
+// Name resolves Industry.Name
+func (r *IndustryResolver) Name() string {
+	return r.i.Name
 }
