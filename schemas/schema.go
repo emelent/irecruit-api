@@ -14,10 +14,7 @@ type Schema struct {
 // DefaultSchemas is a list of all necessary schemas
 var DefaultSchemas = []Schema{
 	PublicSchema,
-	RecruitSchema,
-	IndustrySchema,
 	ViewerSchema,
-	QuestionSchema,
 	DocumentSchema,
 	EditorSchema,
 }

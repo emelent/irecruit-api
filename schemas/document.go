@@ -22,7 +22,6 @@ var DocumentSchema = Schema{
 		}
 	`,
 	Queries: `
-		documents:[Document]!
 	`,
 	Mutations: `
 		createDocument(
