@@ -307,22 +307,112 @@ func (r *SysEditorResolver) Email() string {
 
 // RemoveRecruit resolves SysEditor.RemoveRecruit which removes a Recruit with the given ID
 func (r *SysEditorResolver) RemoveRecruit(args struct{ ID graphql.ID }) (*string, error) {
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+
 	return ResolveRemoveByID(
 		r.crud,
 		config.RecruitsCollection,
 		"Recruit",
-		string(args.ID),
+		bson.ObjectIdHex(id),
 	)
 }
 
 // RemoveAccount resolves SysEditor.RemoveAccount which removes an Account with the given ID
 func (r *SysEditorResolver) RemoveAccount(args struct{ ID graphql.ID }) (*string, error) {
+	// check the id
 	id := string(args.ID)
 	if !bson.IsObjectIdHex(id) {
 		return nil, er.InvalidField("id")
 	}
 
 	return ResolveRemoveAccount(r.crud, bson.ObjectIdHex(id))
+}
+
+// RemoveQuestion resolves SysEditor.RemoveQuestion which removes a Question with the given ID
+func (r *SysEditorResolver) RemoveQuestion(args struct{ ID graphql.ID }) (*string, error) {
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+
+	return ResolveRemoveByID(r.crud, config.QuestionsCollection, "Question", bson.ObjectIdHex(id))
+}
+
+// RemoveDocument resolves SysEditor.RemoveDocument which removes a Document with the given ID
+func (r *SysEditorResolver) RemoveDocument(args struct{ ID graphql.ID }) (*string, error) {
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+
+	return ResolveRemoveByID(r.crud, config.DocumentsCollection, "Document", bson.ObjectIdHex(id))
+}
+
+// RemoveIndustry resolves SysEditor.RemoveIndustry which removes an Industry with the given ID
+func (r *SysEditorResolver) RemoveIndustry(args struct{ ID graphql.ID }) (*string, error) {
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+
+	return ResolveRemoveByID(r.crud, config.IndustriesCollection, "Industry", bson.ObjectIdHex(id))
+}
+
+// CreateQuestion resolves SysEditor.CreateQuestion
+func (r *SysEditorResolver) CreateQuestion(args struct {
+	IndustryID graphql.ID
+	Question   string
+}) (*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// check industry id
+	id := string(args.IndustryID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("industry_id")
+	}
+
+	// create question
+	question := models.Question{
+		IndustryID: bson.ObjectIdHex(id),
+		Question:   args.Question,
+	}
+
+	// validate question
+	if err := question.OK(); err != nil {
+		return nil, err
+	}
+
+	if err := r.crud.Insert(config.QuestionsCollection, question); err != nil {
+		return nil, er.Generic()
+	}
+
+	return &QuestionResolver{&question}, nil
+}
+
+// CreateIndustry resolves SysEditor.CreateIndustry
+func (r *SysEditorResolver) CreateIndustry(args struct{ Name string }) (*IndustryResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// create question
+	industry := models.Industry{Name: args.Name}
+
+	// validate question
+	if err := industry.OK(); err != nil {
+		return nil, err
+	}
+
+	if err := r.crud.Insert(config.IndustriesCollection, industry); err != nil {
+		return nil, er.Generic()
+	}
+
+	return &IndustryResolver{&industry}, nil
 }
 
 // -----------------
