@@ -134,6 +134,7 @@ func TestViewAccountViewer(t *testing.T) {
 
 	// login with plain account
 	token, _ := login(crud, getPlainUserAccount().ID, "none")
+
 	// prepare query
 	query := fmt.Sprintf(`
 		query{
@@ -141,11 +142,11 @@ func TestViewAccountViewer(t *testing.T) {
 				... on AccountViewer{
 					is_hunter
 					is_recruit
-					checkPassword(password: "password")
+					checkPassword(password: "%s")
 				}
 			}
 		}
-	`, token)
+	`, token, moc.DefaultPassword)
 
 	// request
 	response, err := gqlRequestAndRespond(handler, query, nil)

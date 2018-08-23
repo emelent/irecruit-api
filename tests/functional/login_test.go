@@ -22,7 +22,7 @@ func TestLoginValid(t *testing.T) {
 				accessToken
 			}
 		}	  
-	`, method, moc.Accounts[0].Email, moc.Accounts[0].Password)
+	`, method, moc.Accounts[0].Email, moc.DefaultPassword)
 
 	// request and respond
 	response, err := gqlRequestAndRespond(handler, query, nil)
@@ -68,7 +68,7 @@ func TestLoginInvalid(t *testing.T) {
 		fmt.Sprintf(`
 			# case 1 invalid email
 			email: "trash", password: "%s"
-		`, acc.Password),
+		`, moc.DefaultPassword),
 		fmt.Sprintf(`
 			# case 2 invalid password
 			email: "%s", password: "trash"
