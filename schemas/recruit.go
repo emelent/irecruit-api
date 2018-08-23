@@ -37,9 +37,9 @@ var RecruitSchema = Schema{
 			phone: String
 			email: String
 			birth_year: Int
-			qa1_question: String
+			qa1_question_id: ID
 			qa1_answer: String
-			qa2_question: String
+			qa2_question_id: ID
 			qa2_answer: String
 		}
 

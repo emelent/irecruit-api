@@ -413,14 +413,14 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 	if info.BirthYear == nil {
 		return nil, er.MissingField("info.birth_year")
 	}
-	if info.Qa1Question == nil {
-		return nil, er.MissingField("info.qa1_question")
+	if info.Qa1QuestionID == nil {
+		return nil, er.MissingField("info.qa1_question_id")
 	}
 	if info.Qa1Answer == nil {
 		return nil, er.MissingField("info.qa1_answer")
 	}
-	if info.Qa2Question == nil {
-		return nil, er.MissingField("info.qa2_question")
+	if info.Qa2QuestionID == nil {
+		return nil, er.MissingField("info.qa2_question_id")
 	}
 	if info.Qa2Answer == nil {
 		return nil, er.MissingField("info.qa2_answer")
@@ -438,8 +438,43 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 	recruit.Phone = *info.Phone
 	recruit.Email = *info.Email
 	recruit.BirthYear = *info.BirthYear
-	recruit.Qa1 = models.QA{Question: *info.Qa1Question, Answer: *info.Qa1Answer}
-	recruit.Qa2 = models.QA{Question: *info.Qa2Question, Answer: *info.Qa2Answer}
+
+	getQuestion := func(id bson.ObjectId) (*models.Question, error) {
+		rawQ, err := r.crud.FindID(config.QuestionsCollection, id)
+		if err != nil {
+			return nil, err
+		}
+		question := models.TransformQuestion(rawQ)
+		return &question, nil
+	}
+
+	// check question ids
+	qa1ID := string(*info.Qa1QuestionID)
+	if !bson.IsObjectIdHex(qa1ID) {
+		return nil, er.InvalidField("info.qa1_question_id")
+	}
+
+	qa2ID := string(*info.Qa2QuestionID)
+	if !bson.IsObjectIdHex(qa2ID) {
+		return nil, er.InvalidField("info.qa2_question_id")
+	}
+
+	// get question1 from db
+	qa1, err := getQuestion(bson.ObjectIdHex(qa1ID))
+	if err != nil {
+		return nil, er.InvalidField("info.qa1_question_id")
+	}
+
+	// set QA1
+	recruit.Qa1 = models.QA{Question: qa1.Question, Answer: *info.Qa1Answer}
+
+	// get question2 from db
+	qa2, err := getQuestion(bson.ObjectIdHex(qa2ID))
+	if err != nil {
+		return nil, er.InvalidField("info.qa2_question_id")
+	}
+	// set QA2
+	recruit.Qa2 = models.QA{Question: qa2.Question, Answer: *info.Qa2Answer}
 
 	// validate recruit profile
 	if err := recruit.OK(); err != nil {
@@ -459,6 +494,8 @@ func (r *AccountEditorResolver) CreateRecruit(args struct{ Info *recruitDetails 
 		log.Println(err)
 		return nil, er.Generic()
 	}
+
+	// return recruit profile
 	return &RecruitResolver{&recruit, account}, nil
 }
 
@@ -493,19 +530,19 @@ func (r *EditorResolver) ToAccountEditor() (*AccountEditorResolver, bool) {
 // recruitDetails struct
 // -----------------
 type recruitDetails struct {
-	Phone       *string
-	Email       *string
-	Province    *string
-	City        *string
-	Gender      *string
-	Disability  *string
-	Vid1Url     *string
-	Vid2Url     *string
-	Qa1Question *string
-	Qa1Answer   *string
-	Qa2Question *string
-	Qa2Answer   *string
-	BirthYear   *int32
+	Phone         *string
+	Email         *string
+	Province      *string
+	City          *string
+	Gender        *string
+	Disability    *string
+	Vid1Url       *string
+	Vid2Url       *string
+	Qa1QuestionID *graphql.ID
+	Qa1Answer     *string
+	Qa2QuestionID *graphql.ID
+	Qa2Answer     *string
+	BirthYear     *int32
 }
 
 // -----------------
