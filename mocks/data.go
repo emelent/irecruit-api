@@ -5,6 +5,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// DefaultPassword is the password for all moc accounts
+const DefaultPassword = "password"
+
 /*
 Contains all mock data
 
@@ -93,7 +96,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "mark@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Mark",
 		Surname:     "Smith",
 		AccessLevel: 0,
@@ -101,7 +104,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jdoe@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "John",
 		Surname:     "Doe",
 		AccessLevel: 0,
@@ -109,7 +112,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "lisa@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Lisa",
 		Surname:     "Smith",
 		AccessLevel: 0,
@@ -117,7 +120,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "erin@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Erin",
 		Surname:     "Lona",
 		AccessLevel: 0,
@@ -125,7 +128,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "jake@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Jake",
 		Surname:     "Tinder",
 		AccessLevel: 0,
@@ -133,7 +136,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "moti@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Morlin",
 		Surname:     "Tinder",
 		AccessLevel: 0,
@@ -141,7 +144,7 @@ var Accounts = []models.Account{
 	{
 		ID:          bson.NewObjectId(),
 		Email:       "thato@gmail.com",
-		Password:    "password",
+		Password:    DefaultPassword,
 		Name:        "Thato",
 		Surname:     "Mopani",
 		AccessLevel: 9, // system admin
