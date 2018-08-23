@@ -1,16 +1,17 @@
 TODO
 
-	- Move creators into Edit.SysEditor
+	=> Move creators into Edit.SysEditor
 
-	- make it usable for Sys Admins
-	- create necessary  mutations 
+	=> make it usable for Sys Admins
+	
+	=> create necessary  mutations 
 		- SysEditor
 
-	- Remove unneeded resolvers
-	- Write transformer unit tests
+	=> Remove unneeded resolvers
+	=> Write transformer unit tests
 
 
-	- move upload stuff to separate microservice
+	=> move upload stuff to separate microservice
 		- upload & remove documents
 			- fs server removes file then makes
 			  a request for document removal on behalf
@@ -23,13 +24,26 @@ TODO
 
 
 
-	- make it usable for Hunters
+	=> make it usable for Hunters
 		- create models
 			- Company
 			- Hunter
 	
+	=> refactoring
+		=> move all "schema" files to graphql text files
+		=> review CRUD system
+		=> refactor some tests to make use of sub-tests, maybe
+		=> refactor test cases to be table driven, some kinda are,
+			but in a really hacky way.
+		=> consider using "frozen" db states as fixtures
+		=> consider putting expected outputs in "golden files", this will
+			definitely make things easier when testing query results... nvm,
+			it probably won't work because we have some "dynamic" results, which
+			are based on the input
+		=> add mock flag to test cases, that way they can be run either on real db
+			or using the mock interface
 
-	- Things for later on
+	=> Things for later on
 
 		- Cascading Deletes
 			- removing an account means removing related
