@@ -400,10 +400,10 @@ func (r *SysEditorResolver) CreateQuestion(args struct {
 func (r *SysEditorResolver) CreateIndustry(args struct{ Name string }) (*IndustryResolver, error) {
 	defer r.crud.CloseCopy()
 
-	// create question
+	// create industry
 	industry := models.Industry{Name: args.Name}
 
-	// validate question
+	// validate industry
 	if err := industry.OK(); err != nil {
 		return nil, err
 	}
@@ -429,6 +429,13 @@ func (r *SysEditorResolver) UpdateIndustry(args struct {
 	}
 	bid := bson.ObjectIdHex(id)
 
+	// check name
+	if args.Name == "" {
+		return nil, er.InvalidField("name")
+	}
+
+	// TODO validate updates
+
 	// run update
 	if err := r.crud.UpdateID(config.IndustriesCollection, bid, bson.M{
 		"name": args.Name,
@@ -445,6 +452,45 @@ func (r *SysEditorResolver) UpdateIndustry(args struct {
 
 	// return industry
 	return &IndustryResolver{&industry}, nil
+}
+
+// UpdateQuestion resolves SysEditor.UpdateQuestion
+func (r *SysEditorResolver) UpdateQuestion(args struct {
+	ID       graphql.ID
+	Question string
+}) (*QuestionResolver, error) {
+	defer r.crud.CloseCopy()
+
+	// check the id
+	id := string(args.ID)
+	if !bson.IsObjectIdHex(id) {
+		return nil, er.InvalidField("id")
+	}
+	bid := bson.ObjectIdHex(id)
+
+	// check question
+	if args.Question == "" {
+		return nil, er.InvalidField("Question")
+	}
+
+	// TODO validate updates
+
+	// run update
+	if err := r.crud.UpdateID(config.QuestionsCollection, bid, bson.M{
+		"question": args.Question,
+	}); err != nil {
+		return nil, er.Generic()
+	}
+
+	// get updated question
+	rawQuestion, err := r.crud.FindID(config.QuestionsCollection, bid)
+	if err != nil {
+		return nil, er.Generic()
+	}
+	question := models.TransformQuestion(rawQuestion)
+
+	// return industry
+	return &QuestionResolver{&question}, nil
 }
 
 // -----------------
