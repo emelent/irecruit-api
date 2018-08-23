@@ -32,11 +32,8 @@ var EditorSchema = Schema{
 			removeQuestion(id: ID!): String
 			removeDocument(id: ID!): String
 			
-
-			#updateRecruit(id: ID!): Recruit
-			#updateAccount(id: ID!): Account
-			#updateIndustry(id: ID!): Industry
-			#updateQuestion(id: ID!): Industry
+			updateIndustry(id: ID!, name: String!): Industry
+			#updateQuestion(id: ID!, question: String!): Industry
 		}
 	`,
 	Queries: `
