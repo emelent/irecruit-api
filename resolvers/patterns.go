@@ -11,16 +11,11 @@ import (
 )
 
 // ResolveRemoveByID is a generic resolver for removeByID methods
-func ResolveRemoveByID(crud *db.CRUD, collection, name, id string) (*string, error) {
+func ResolveRemoveByID(crud *db.CRUD, collection, name string, id bson.ObjectId) (*string, error) {
 	defer crud.CloseCopy()
 
-	// check that the ID is valid
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.InvalidField("id")
-	}
-
 	// attempt to remove document
-	if err := crud.DeleteID(collection, bson.ObjectIdHex(id)); err != nil {
+	if err := crud.DeleteID(collection, id); err != nil {
 		return nil, er.Generic()
 	}
 	result := name + " successfully removed."
