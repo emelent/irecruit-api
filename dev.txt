@@ -30,6 +30,7 @@ TODO
 			- Hunter
 	
 	=> refactoring
+		=> look into the whole "utils" anti-pattern
 		=> move all "schema" files to graphql text files
 		=> review CRUD system
 		=> refactor some tests to make use of sub-tests, maybe
