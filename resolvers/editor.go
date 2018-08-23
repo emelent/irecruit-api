@@ -429,12 +429,20 @@ func (r *SysEditorResolver) UpdateIndustry(args struct {
 	}
 	bid := bson.ObjectIdHex(id)
 
-	// check name
-	if args.Name == "" {
-		return nil, er.InvalidField("name")
-	}
-
 	// TODO validate updates
+
+	// find existing industr
+	rawIndustry, err := r.crud.FindID(config.IndustriesCollection, bid)
+	if err != nil {
+		return nil, er.Generic()
+	}
+	industry := models.TransformIndustry(rawIndustry)
+
+	// apply and test updates on industry
+	industry.Name = args.Name
+	if err := industry.OK(); err != nil {
+		return nil, err
+	}
 
 	// run update
 	if err := r.crud.UpdateID(config.IndustriesCollection, bid, bson.M{
@@ -442,13 +450,6 @@ func (r *SysEditorResolver) UpdateIndustry(args struct {
 	}); err != nil {
 		return nil, er.Generic()
 	}
-
-	// get updated industry
-	rawIndustry, err := r.crud.FindID(config.IndustriesCollection, bid)
-	if err != nil {
-		return nil, er.Generic()
-	}
-	industry := models.TransformIndustry(rawIndustry)
 
 	// return industry
 	return &IndustryResolver{&industry}, nil
@@ -468,12 +469,18 @@ func (r *SysEditorResolver) UpdateQuestion(args struct {
 	}
 	bid := bson.ObjectIdHex(id)
 
-	// check question
-	if args.Question == "" {
-		return nil, er.InvalidField("Question")
+	// find existing question
+	rawQuestion, err := r.crud.FindID(config.QuestionsCollection, bid)
+	if err != nil {
+		return nil, er.Generic()
 	}
+	question := models.TransformQuestion(rawQuestion)
 
-	// TODO validate updates
+	// apply and validate updates on question
+	question.Question = args.Question
+	if err := question.OK(); err != nil {
+		return nil, err
+	}
 
 	// run update
 	if err := r.crud.UpdateID(config.QuestionsCollection, bid, bson.M{
@@ -481,13 +488,6 @@ func (r *SysEditorResolver) UpdateQuestion(args struct {
 	}); err != nil {
 		return nil, er.Generic()
 	}
-
-	// get updated question
-	rawQuestion, err := r.crud.FindID(config.QuestionsCollection, bid)
-	if err != nil {
-		return nil, er.Generic()
-	}
-	question := models.TransformQuestion(rawQuestion)
 
 	// return industry
 	return &QuestionResolver{&question}, nil
