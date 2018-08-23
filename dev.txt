@@ -1,13 +1,8 @@
 TODO
-
-	=> Move creators into Edit.SysEditor
-
-	=> make it usable for Sys Admins
-	
 	=> create necessary  mutations 
 		- SysEditor
+			- update methods
 
-	=> Remove unneeded resolvers
 	=> Write transformer unit tests
 
 
