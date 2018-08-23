@@ -24,12 +24,10 @@ var EditorSchema = Schema{
 		
 		type SysEditor{
 			removeAccount(id: ID!): String
+			removeRecruit(id: ID!): String
 			
 			#createQuestion(): Question
 			#createIndustry(): Industry
-
-			removeRecruit(id: ID!): String
-			#removeAccount(id: ID!): String
 			#removeIndustry(id: ID!): String
 			#removeQuestion(id: ID!): String
 
