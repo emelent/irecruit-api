@@ -35,49 +35,6 @@ func (r *RootResolver) Questions() ([]*QuestionResolver, error) {
 	return results, err
 }
 
-// CreateQuestion resolves "createQuestion"  gql mutation
-func (r *RootResolver) CreateQuestion(args struct {
-	IndustryID graphql.ID
-	Question   string
-}) (*QuestionResolver, error) {
-	defer r.crud.CloseCopy()
-
-	// check that IndustryID is valid
-	id := string(args.IndustryID)
-	if !bson.IsObjectIdHex(id) {
-		return nil, er.InvalidField("industry_id")
-	}
-
-	// create question
-	var question models.Question
-	question.ID = bson.NewObjectId()
-	question.Question = args.Question
-	question.IndustryID = bson.ObjectIdHex(id)
-
-	// validate question
-	if err := question.OK(); err != nil {
-		return nil, err
-	}
-
-	// store question in db
-	if err := r.crud.Insert(config.QuestionsCollection, question); err != nil {
-		return nil, er.Generic()
-	}
-
-	// return question
-	return &QuestionResolver{&question}, nil
-}
-
-// RemoveQuestion resolves "removeQuestion" mutation
-func (r *RootResolver) RemoveQuestion(args struct{ ID graphql.ID }) (*string, error) {
-	return ResolveRemoveByID(
-		r.crud,
-		config.QuestionsCollection,
-		"Question",
-		string(args.ID),
-	)
-}
-
 // RandomQuestions resolves "randomQuestions" gql query
 func (r *RootResolver) RandomQuestions(args struct{ IndustryID graphql.ID }) ([]*QuestionResolver, error) {
 	defer r.crud.CloseCopy()

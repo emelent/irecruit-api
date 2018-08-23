@@ -2,9 +2,6 @@ package resolvers
 
 import (
 	"log"
-	"strings"
-
-	"gopkg.in/mgo.v2/bson"
 
 	config "../config"
 	er "../errors"
@@ -34,46 +31,6 @@ func (r *RootResolver) Industries() ([]*IndustryResolver, error) {
 		results = append(results, &IndustryResolver{&industry})
 	}
 	return results, err
-}
-
-// CreateIndustry resolves "createIndustry"  gql mutation
-func (r *RootResolver) CreateIndustry(args struct{ Name string }) (*IndustryResolver, error) {
-	defer r.crud.CloseCopy()
-
-	// check that the name does not already exist
-	if _, err := r.crud.FindOne(config.IndustriesCollection, bson.M{
-		"name": strings.ToLower(args.Name),
-	}); err == nil {
-		return nil, er.Input("An industry by that name already exists.")
-	}
-
-	// create industry
-	var industry models.Industry
-	industry.ID = bson.NewObjectId()
-	industry.Name = args.Name
-
-	// validate industry
-	if err := industry.OK(); err != nil {
-		return nil, err
-	}
-
-	// store industry in db
-	if err := r.crud.Insert(config.IndustriesCollection, industry); err != nil {
-		return nil, er.Generic()
-	}
-
-	// return industry
-	return &IndustryResolver{&industry}, nil
-}
-
-// RemoveIndustry resolves "removeIndustry" mutation
-func (r *RootResolver) RemoveIndustry(args struct{ ID graphql.ID }) (*string, error) {
-	return ResolveRemoveByID(
-		r.crud,
-		config.IndustriesCollection,
-		"Industry",
-		string(args.ID),
-	)
 }
 
 // -----------------

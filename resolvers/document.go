@@ -69,16 +69,6 @@ func (r *RootResolver) CreateDocument(args struct {
 	return &DocumentResolver{&document}, nil
 }
 
-// RemoveDocument resolves "removeDocument" mutation
-func (r *RootResolver) RemoveDocument(args struct{ ID graphql.ID }) (*string, error) {
-	return ResolveRemoveByID(
-		r.crud,
-		config.DocumentsCollection,
-		"Document",
-		string(args.ID),
-	)
-}
-
 // -----------------
 // DocumentResolver struct
 // -----------------
