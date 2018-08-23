@@ -1,8 +1,4 @@
 TODO
-	=> create necessary  mutations 
-		- SysEditor
-			- update methods
-
 	=> Write transformer unit tests
 
 
