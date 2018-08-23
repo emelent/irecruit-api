@@ -58,7 +58,6 @@ func TestAccountEditor_UpdateAccount(t *testing.T) {
 	assert.Equal(expected, response, msgInvalidResult)
 }
 
-// tests AccountEditor.RemoveAccount
 func TestAccountEditor_RemoveAccount(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
@@ -94,7 +93,6 @@ func TestAccountEditor_RemoveAccount(t *testing.T) {
 	assert.Equal(expected, response, msgInvalidResult)
 }
 
-// tests AccountEditor.CreateRecruit
 func TestAccountEditor_CreateRecruit(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
@@ -274,7 +272,7 @@ func TestRecruitEditor_UpdateRecruit(t *testing.T) {
 	assert.Equal(expected, response, msgInvalidResult)
 }
 
-// tests that RecruitEditor.UpdateQAs updates QAs
+// tests that RecruitEditor.UpdateQAs updates the current Recruit profiles QAs
 func TestRecruitEditor_UpdateQAs(t *testing.T) {
 	assert := assert.New(t)
 	crud := moc.NewLoadedCRUD()
@@ -336,7 +334,6 @@ func TestRecruitEditor_UpdateQAs(t *testing.T) {
 	assert.Equal(expected, response, msgInvalidResult)
 }
 
-// tests RecruitEditor.RemoveRecruit
 func TestRecruitEditor_RemoveRecruit(t *testing.T) {
 	crud := moc.NewLoadedCRUD()
 	handler := createGqlHandler(crud)
@@ -391,4 +388,264 @@ func TestEditWithInvalidToken(t *testing.T) {
 	response, err := gqlRequestAndRespond(handler, query, nil)
 	failOnError(assert, err)
 	assert.Contains(response, "errors", msgNoError)
+}
+
+func TestSysEditor_RemoveAccount(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					removeAccount(id: "%s")
+				}
+			}
+		}
+	`, token, getPlainUserAccount().ID.Hex())
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"removeAccount": "Account successfully removed.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+
+func TestSysEditor_RemoveRecruit(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					removeRecruit(id: "%s")
+				}
+			}
+		}
+	`, token, getRecruitUserAccount().RecruitID.Hex())
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"removeRecruit": "Recruit successfully removed.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+func TestSysEditor_RemoveIndustry(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					removeIndustry(id: "%s")
+				}
+			}
+		}
+	`, token, moc.Industries[0].ID.Hex())
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"removeIndustry": "Industry successfully removed.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+
+func TestSysEditor_RemoveQuestion(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					removeQuestion(id: "%s")
+				}
+			}
+		}
+	`, token, moc.Questions[0].ID.Hex())
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"removeQuestion": "Question successfully removed.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+
+func TestSysEditor_RemoveDocument(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					removeDocument(id: "%s")
+				}
+			}
+		}
+	`, token, moc.Documents[0].ID.Hex())
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"removeDocument": "Document successfully removed.",
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+
+func TestSysEditor_CreateQuestion(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	// prep data
+	industryID := moc.Industries[0].ID.Hex()
+	question := "Have you ever tasted stuffed socks?"
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					createQuestion(industry_id: "%s", question: "%s"){
+						question
+						industry_id
+					}
+				}
+			}
+		}
+	`, token, industryID, question)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"createQuestion": map[string]interface{}{
+					"question":    question,
+					"industry_id": industryID,
+				},
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
+}
+
+func TestSysEditor_CreateIndustry(t *testing.T) {
+	assert := assert.New(t)
+	crud := moc.NewLoadedCRUD()
+	handler := createGqlHandler(crud)
+
+	// login as sys
+	token, _ := login(crud, getSysUserAccount().ID, "none")
+
+	name := "megastructures"
+
+	// prepare query
+	query := fmt.Sprintf(`
+		mutation{
+			edit(token: "%s"){
+				... on SysEditor{
+					createIndustry(name: "%s"){
+						name
+					}
+				}
+			}
+		}
+	`, token, name)
+
+	// request
+	response, err := gqlRequestAndRespond(handler, query, nil)
+	failOnError(assert, err)
+
+	// prep expected
+	expected := map[string]interface{}{
+		"data": map[string]interface{}{
+			"edit": map[string]interface{}{
+				"createIndustry": map[string]interface{}{
+					"name": name,
+				},
+			},
+		},
+	}
+
+	assert.Equal(expected, response, msgInvalidResponse)
 }
